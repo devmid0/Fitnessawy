@@ -7,8 +7,8 @@
 (function () {
   'use strict';
 
-  var DATA_URL = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/data/exercises.json';
-  var BASE_IMG = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
+  var DATA_URL = './assets/data/exercises.json';
+  var MEDIA_BASE = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/';
   var PAGE_SIZE = 30;
 
   /* ── State ─────────────────────────────── */
@@ -74,23 +74,23 @@
 
   /* ── Fetch ─────────────────────────────── */
 
-  function showLoading() {
-    exLoading.style.display = '';
-    exError.style.display = 'none';
+  function pulseEntrance(el) {
+    el.classList.remove('ex-entrance');
+    void el.offsetWidth;
+    el.classList.add('ex-entrance');
+  }
+
+  function showError(msg) {
+    exLoading.style.display = 'none';
+    exError.querySelector('p').textContent = msg;
+    exError.style.display = '';
     muscleGrid.style.display = 'none';
     exerciseList.style.display = 'none';
     workoutFab.style.display = 'none';
   }
 
-  function showError() {
-    exLoading.style.display = 'none';
-    exError.style.display = '';
-    muscleGrid.style.display = 'none';
-    exerciseList.style.display = 'none';
-  }
-
   function fetchExercises() {
-    showLoading();
+    exError.style.display = 'none';
 
     fetch(DATA_URL)
       .then(function (r) {
@@ -100,10 +100,11 @@
       .then(function (data) {
         allExercises = data;
         parseAndGroup();
+        pulseEntrance(muscleGrid);
         showMuscleGrid();
       })
       .catch(function () {
-        showError();
+        showError('SYSTEM HALTED: Could not locate database at /assets/data/exercises.json');
       });
   }
 
@@ -214,19 +215,21 @@
     renderedCount = end;
   }
 
+  var FALLBACK_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MiIgaGVpZ2h0PSI1MiIgdmlld0JveD0iMCAwIDUyIDUyIj48cmVjdCB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHJ4PSI2IiBmaWxsPSIjMTQxNDE0Ii8+PHRleHQgeD0iMjYiIHk9IjMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNDQ0IiBmb250LXNpemU9IjIwIj7imqE8L3RleHQ+PC9zdmc+';
+
   function createExCard(ex) {
     var div = document.createElement('div');
     div.className = 'ex-card';
     div.dataset.id = ex.id;
 
     var isAdded = selectedExercises.some(function (s) { return s.id === ex.id; });
-    var imgSrc = ex.image ? (BASE_IMG + ex.image) : '';
+    var imgSrc = ex.gif_url ? (MEDIA_BASE + ex.gif_url) : (ex.image ? (MEDIA_BASE + ex.image) : '');
 
     var html = '';
     if (imgSrc) {
-      html += '<img class="ex-card-thumb" src="' + esc(imgSrc) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">';
+      html += '<img class="ex-card-thumb" src="' + esc(imgSrc) + '" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + FALLBACK_SVG + '\';this.classList.add(\'ex-card-fallback\')">';
     } else {
-      html += '<div class="ex-card-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem">🏋️</div>';
+      html += '<div class="ex-card-thumb ex-card-fallback"></div>';
     }
 
     html += '<div class="ex-card-info">';

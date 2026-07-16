@@ -41,13 +41,18 @@
 
   var RING_CIRC = 2 * Math.PI * 18;
 
-  /* ── DOM refs ─────────────────────────── */
+  /* ── Floating Timer DOM refs ─────────── */
+
+  var ftEl = null;
+  var ftRingFg = null;
+  var ftDigit = null;
+  var ftSublabel = null;
+
+  /* ── Static DOM refs ─────────────────── */
 
   var logEmpty, logActive, statsSection, logExercises;
   var logWorkoutName, logDuration, logExerciseCount, logTotalVolume;
   var btnFinish, logValidationMsg;
-  var restTimerPanel, restRingFg, restTimerDigit, restTimerSublabel;
-  var btnRestSkip, btnRestCancel;
 
   function cacheDom() {
     logEmpty         = document.getElementById('logEmpty');
@@ -60,12 +65,6 @@
     logTotalVolume   = document.getElementById('logTotalVolume');
     btnFinish        = document.getElementById('btnFinish');
     logValidationMsg = document.getElementById('logValidationMsg');
-    restTimerPanel   = document.getElementById('restTimerPanel');
-    restRingFg       = document.getElementById('restRingFg');
-    restTimerDigit   = document.getElementById('restTimerDigit');
-    restTimerSublabel= document.getElementById('restTimerSublabel');
-    btnRestSkip      = document.getElementById('btnRestSkip');
-    btnRestCancel    = document.getElementById('btnRestCancel');
   }
 
   /* ── Init ─────────────────────────────── */
@@ -109,6 +108,7 @@
       logActive.style.display = 'none';
       statsSection.style.display = '';
       stopDurationClock();
+      hideFloatingTimer();
       return;
     }
 
@@ -147,7 +147,7 @@
 
       /* set table */
       html += '<div class="log-set-table">';
-      html += '<div class="log-set-head"><span>SET</span><span>REPS</span><span>WEIGHT</span><span></span></div>';
+      html += '<div class="log-set-head"><span>SET</span><span>REPS</span><span>WEIGHT</span><span></span><span></span></div>';
 
       ex.sets.forEach(function (set, si) {
         var isDone = !!(set.reps && set.weight);
@@ -155,9 +155,15 @@
         html += '<span class="log-set-num">' + (si + 1) + '</span>';
         html += input('reps', ei, si, ex.targetReps || '—');
         html += input('weight', ei, si, 'kg');
-        html += '<button class="log-set-timer-btn" data-rest-ex="' + escA(ex.name) + '" title="Rest 90s">';
-        html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+
+        /* Complete Set button (cyan checkmark) */
+        html += '<button class="log-set-complete-btn" data-ex="' + ei + '" data-set="' + si + '" data-rest-ex="' + escA(ex.name) + '" title="Complete Set">';
+        html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
         html += '</button>';
+
+        /* Delete Set button (always visible ×) */
+        html += '<button class="delete-set-btn" data-ex="' + ei + '" data-set="' + si + '" title="Delete Set">&times;</button>';
+
         html += '</div>';
       });
 
@@ -167,6 +173,12 @@
       html += '<button class="log-add-set" data-ex="' + ei + '">';
       html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
       html += 'Add Set';
+      html += '</button>';
+
+      /* finish exercise */
+      html += '<button class="log-finish-exercise" data-ex="' + ei + '">';
+      html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      html += 'Finish Exercise';
       html += '</button>';
 
       html += '</div>';
@@ -191,6 +203,8 @@
     logExercises.addEventListener('input', onInput);
     logExercises.addEventListener('focus', onFocus, true);
     logExercises.addEventListener('click', onClick);
+    logExercises.addEventListener('keydown', onKeydown);
+    logExercises.addEventListener('blur', onBlur, true);
 
     document.querySelectorAll('.rest-preset').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -198,8 +212,6 @@
       });
     });
 
-    btnRestSkip.addEventListener('click', cancelRest);
-    btnRestCancel.addEventListener('click', cancelRest);
     btnFinish.addEventListener('click', finishWorkout);
   }
 
@@ -224,12 +236,66 @@
     if (e.target.classList.contains('log-input')) e.target.select();
   }
 
+  function onKeydown(e) {
+    if (e.key === 'Enter' && e.target.classList.contains('log-input')) {
+      e.target.blur();
+    }
+  }
+
+  function onBlur(e) {
+    var el = e.target;
+    if (!el.classList.contains('log-input')) return;
+    if (el.dataset.field !== 'weight') return;
+    if (+el.dataset.set !== 0) return;
+
+    autoFillWeights(+el.dataset.ex, el.value);
+  }
+
+  function autoFillWeights(ei, val) {
+    if (!currentWorkout || !currentWorkout.exercises[ei]) return;
+    if (!val) return;
+
+    var sets = currentWorkout.exercises[ei].sets;
+    var rows = logExercises.querySelectorAll('.log-ex-card')[ei];
+    if (!rows) return;
+
+    var inputs = rows.querySelectorAll('.log-input[data-field="weight"]');
+
+    for (var i = 1; i < sets.length; i++) {
+      if (sets[i].weight) continue;
+
+      sets[i].weight = val;
+      if (inputs[i]) {
+        inputs[i].value = val;
+        inputs[i].classList.add('has-value');
+      }
+    }
+
+    saveCurrent();
+    updateVolume();
+  }
+
   function onClick(e) {
     var addBtn = e.target.closest('.log-add-set');
     if (addBtn) { addSet(+addBtn.dataset.ex); return; }
 
-    var tBtn = e.target.closest('.log-set-timer-btn');
-    if (tBtn) { startRest(90000, tBtn.dataset.restEx); return; }
+    var completeBtn = e.target.closest('.log-set-complete-btn');
+    if (completeBtn) {
+      startRest(90000, completeBtn.dataset.restEx);
+      return;
+    }
+
+    var deleteBtn = e.target.closest('.delete-set-btn');
+    if (deleteBtn) {
+      deleteSet(+deleteBtn.dataset.ex, +deleteBtn.dataset.set);
+      return;
+    }
+
+    var finishExBtn = e.target.closest('.log-finish-exercise');
+    if (finishExBtn) {
+      finishExercise(+finishExBtn.dataset.ex);
+      return;
+    }
   }
 
   function refreshSetRow(el) {
@@ -250,7 +316,7 @@
     if (num) num.innerHTML = complete ? '&#10003;' : pad(ei + 1);
   }
 
-  /* ── Add Set ──────────────────────────── */
+  /* ── Add / Delete Set ─────────────────── */
 
   function addSet(ei) {
     currentWorkout.exercises[ei].sets.push({ reps: '', weight: '' });
@@ -262,6 +328,42 @@
     if (card) {
       var last = card.querySelector('.log-set-row:last-child .log-input');
       if (last) last.focus();
+    }
+  }
+
+  function deleteSet(ei, si) {
+    if (!currentWorkout || !currentWorkout.exercises[ei]) return;
+    if (currentWorkout.exercises[ei].sets.length <= 1) return;
+
+    currentWorkout.exercises[ei].sets.splice(si, 1);
+    saveCurrent();
+    renderCards();
+    refreshCard(ei);
+    updateVolume();
+  }
+
+  /* ── Finish Exercise (Focus Mode) ─────── */
+
+  function finishExercise(ei) {
+    var cards = logExercises.querySelectorAll('.log-ex-card');
+    var card = cards[ei];
+    if (!card) return;
+
+    card.classList.add('collapsed');
+
+    /* scroll to next uncollapsed card */
+    var nextCard = null;
+    for (var i = ei + 1; i < cards.length; i++) {
+      if (!cards[i].classList.contains('collapsed')) {
+        nextCard = cards[i];
+        break;
+      }
+    }
+
+    if (nextCard) {
+      setTimeout(function () {
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     }
   }
 
@@ -304,86 +406,136 @@
     return h > 0 ? pad(h) + ':' + pad(m) + ':' + pad(s) : pad(m) + ':' + pad(s);
   }
 
-  /* ── Rest Timer (Timestamp-Based) ─────── */
+  /* ── Floating Rest Timer ──────────────── */
 
-  function startRest(durMs, exName) {
+  function createFloatingTimer() {
+    var el = document.createElement('div');
+    el.id = 'floatingTimer';
+    el.className = 'floating-timer';
+    el.innerHTML =
+      '<div class="ft-inner">' +
+        '<div class="ft-ring-wrap">' +
+          '<svg class="ft-ring" viewBox="0 0 44 44">' +
+            '<circle class="ft-ring-bg" cx="22" cy="22" r="18"/>' +
+            '<circle class="ft-ring-fg" cx="22" cy="22" r="18"/>' +
+          '</svg>' +
+          '<span class="ft-digit">90</span>' +
+        '</div>' +
+        '<div class="ft-meta">' +
+          '<span class="ft-label">REST</span>' +
+          '<span class="ft-sublabel"></span>' +
+        '</div>' +
+        '<div class="ft-actions">' +
+          '<button class="ft-btn ft-btn-skip" title="Skip Rest">' +
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>' +
+          '</button>' +
+          '<button class="ft-btn ft-btn-add" title="Add 15 seconds">+15s</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(el);
+
+    ftEl = el;
+    ftRingFg = el.querySelector('.ft-ring-fg');
+    ftDigit = el.querySelector('.ft-digit');
+    ftSublabel = el.querySelector('.ft-sublabel');
+
+    el.querySelector('.ft-btn-skip').addEventListener('click', hideFloatingTimer);
+    el.querySelector('.ft-btn-add').addEventListener('click', add15Seconds);
+  }
+
+  function showFloatingTimer(durMs, exName) {
+    if (!ftEl) createFloatingTimer();
+
     timer.active = true;
     timer.targetMs = durMs;
     timer.startTs = Date.now();
     timer.exerciseName = exName || '';
 
-    restTimerPanel.style.display = '';
-    restTimerSublabel.textContent = timer.exerciseName;
-    restRingFg.style.strokeDasharray = RING_CIRC;
-    restRingFg.style.strokeDashoffset = 0;
-    restRingFg.style.stroke = '';
-    restTimerDigit.style.color = '';
-    restTimerPanel.style.borderColor = '';
-    restTimerPanel.style.boxShadow = '';
+    ftSublabel.textContent = timer.exerciseName;
+    ftRingFg.style.strokeDasharray = RING_CIRC;
+    ftRingFg.style.strokeDashoffset = 0;
+    ftRingFg.style.stroke = '';
+    ftDigit.style.color = '';
+    ftEl.classList.remove('pulse');
 
-    tickRest();
+    ftEl.style.display = '';
+    /* force reflow then slide in */
+    void ftEl.offsetWidth;
+    ftEl.classList.add('visible');
+
+    tickFloatingTimer();
   }
 
-  function tickRest() {
+  function tickFloatingTimer() {
     if (!timer.active) return;
 
     var elapsed = Date.now() - timer.startTs;
     var remaining = Math.max(0, timer.targetMs - elapsed);
     var sec = Math.ceil(remaining / 1000);
 
-    restTimerDigit.textContent = sec;
+    ftDigit.textContent = sec;
 
     var progress = remaining / timer.targetMs;
-    restRingFg.style.strokeDashoffset = RING_CIRC * (1 - progress);
+    ftRingFg.style.strokeDashoffset = RING_CIRC * (1 - progress);
 
     if (sec <= 10) {
-      restRingFg.style.stroke = 'var(--danger)';
-      restTimerDigit.style.color = 'var(--danger)';
+      ftRingFg.style.stroke = 'var(--danger)';
+      ftDigit.style.color = 'var(--danger)';
     } else if (sec <= 30) {
-      restRingFg.style.stroke = 'var(--accent-lime)';
-      restTimerDigit.style.color = '';
+      ftRingFg.style.stroke = 'var(--accent-lime)';
+      ftDigit.style.color = '';
     } else {
-      restRingFg.style.stroke = '';
-      restTimerDigit.style.color = '';
+      ftRingFg.style.stroke = '';
+      ftDigit.style.color = '';
     }
 
     if (remaining > 0) {
-      timer.rafId = requestAnimationFrame(tickRest);
+      timer.rafId = requestAnimationFrame(tickFloatingTimer);
     } else {
-      restComplete();
+      floatingTimerComplete();
     }
   }
 
-  function restComplete() {
+  function floatingTimerComplete() {
     timer.active = false;
-    restTimerPanel.style.borderColor = 'var(--accent-lime)';
-    restTimerPanel.style.boxShadow = '0 0 24px var(--accent-lime-glow)';
-    restTimerDigit.textContent = '0';
-    setTimeout(cancelRest, 1500);
+    ftDigit.textContent = '0';
+    ftEl.classList.add('pulse');
+    setTimeout(hideFloatingTimer, 1200);
+  }
+
+  function hideFloatingTimer() {
+    timer.active = false;
+    if (timer.rafId) { cancelAnimationFrame(timer.rafId); timer.rafId = null; }
+    if (!ftEl) return;
+    ftEl.classList.remove('visible');
+    setTimeout(function () {
+      if (ftEl) ftEl.style.display = 'none';
+    }, 350);
+  }
+
+  function add15Seconds() {
+    timer.targetMs += 15000;
+  }
+
+  /* ── Start / Cancel Rest ──────────────── */
+
+  function startRest(durMs, exName) {
+    showFloatingTimer(durMs, exName);
   }
 
   function cancelRest() {
-    timer.active = false;
-    if (timer.rafId) cancelAnimationFrame(timer.rafId);
-    timer.rafId = null;
-    restTimerPanel.style.display = 'none';
-    restTimerPanel.style.borderColor = '';
-    restTimerPanel.style.boxShadow = '';
-    restRingFg.style.strokeDashoffset = 0;
-    restRingFg.style.stroke = '';
-    restTimerDigit.style.color = '';
+    hideFloatingTimer();
   }
 
   /* ── Finish Workout ───────────────────── */
 
   function finishWorkout() {
-    var errs = validate();
-    if (errs.length) { showErr(errs); return; }
-
     var session = compile();
     saveHistory(session);
     clearCurrent();
     render();
+    if (window.ForgeApp) window.ForgeApp.switchView('profile');
   }
 
   function validate() {
@@ -484,7 +636,7 @@
   function clearCurrent() {
     currentWorkout = null;
     try { localStorage.removeItem(CURRENT_KEY); } catch (e) {}
-    cancelRest();
+    hideFloatingTimer();
     stopDurationClock();
   }
 
