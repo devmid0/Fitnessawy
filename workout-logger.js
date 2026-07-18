@@ -535,6 +535,7 @@
     saveHistory(session);
     clearCurrent();
     render();
+    if (window.ForgeBrowser) window.ForgeBrowser.resetSelection();
     if (window.ForgeApp) window.ForgeApp.switchView('profile');
   }
 

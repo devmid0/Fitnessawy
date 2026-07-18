@@ -281,16 +281,16 @@
 
   /* ── Add / Remove Exercise ─────────────── */
 
-  function toggleExercise(ex, btn) {
-    var idx = -1;
-    for (var i = 0; i < selectedExercises.length; i++) {
-      if (selectedExercises[i].id === ex.id) { idx = i; break; }
-    }
+  var SVG_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  var SVG_CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 
-    if (idx >= 0) {
-      selectedExercises.splice(idx, 1);
+  function toggleExercise(ex, btn) {
+    var isSelected = selectedExercises.some(function (s) { return s.id === ex.id; });
+
+    if (isSelected) {
+      selectedExercises = selectedExercises.filter(function (s) { return s.id !== ex.id; });
       btn.classList.remove('added');
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      btn.innerHTML = SVG_PLUS;
     } else {
       selectedExercises.push({
         id: ex.id,
@@ -302,7 +302,7 @@
         targetReps: 10
       });
       btn.classList.add('added');
-      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.innerHTML = SVG_CHECK;
     }
 
     updateFab();
@@ -349,6 +349,24 @@
     return d.innerHTML;
   }
 
+  /* ── Full Selection Reset ─────────────── */
+
+  function resetWorkoutSelectionUI() {
+    selectedExercises = [];
+
+    document.querySelectorAll('.ex-card-add.added').forEach(function (btn) {
+      btn.classList.remove('added');
+      btn.innerHTML = SVG_PLUS;
+    });
+
+    if (workoutFab) {
+      workoutFab.style.display = 'none';
+    }
+    if (fabCount) {
+      fabCount.textContent = '0';
+    }
+  }
+
   /* ── Public API ────────────────────────── */
 
   function init() {
@@ -359,7 +377,8 @@
 
   window.ForgeBrowser = {
     init: init,
-    isLoaded: function () { return allExercises.length > 0; }
+    isLoaded: function () { return allExercises.length > 0; },
+    resetSelection: resetWorkoutSelectionUI
   };
 
   /* ── Boot ──────────────────────────────── */

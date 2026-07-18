@@ -888,7 +888,6 @@ a {
   border-color: var(--accent-lime);
   color: var(--accent-lime);
   background: var(--accent-lime-dim);
-  pointer-events: none;
 }
 
 .ex-card-add.added svg {

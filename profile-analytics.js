@@ -176,6 +176,69 @@
     recentLogs.innerHTML = html;
   }
 
+  /* ── Weekly Volume Chart ───────────────── */
+
+  function computeWeeklyVolume(history) {
+    var now = new Date();
+    var monIdx = (now.getDay() + 6) % 7;
+
+    var monday = new Date(now);
+    monday.setDate(now.getDate() - monIdx);
+    monday.setHours(0, 0, 0, 0);
+
+    var sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23, 59, 59, 999);
+
+    var daily = [0, 0, 0, 0, 0, 0, 0];
+
+    history.forEach(function (s) {
+      if (!s.date) return;
+      var d = new Date(s.date);
+      if (d >= monday && d <= sunday) {
+        daily[(d.getDay() + 6) % 7] += s.totalVolume || 0;
+      }
+    });
+
+    return daily;
+  }
+
+  function renderWeeklyChart(history) {
+    var chart = document.querySelector('#view-progress .bar-chart');
+    if (!chart) return;
+
+    var groups = chart.querySelectorAll('.bar-group');
+    if (!groups.length) return;
+
+    var daily = computeWeeklyVolume(history);
+    var maxVol = 0;
+    for (var i = 0; i < 7; i++) {
+      if (daily[i] > maxVol) maxVol = daily[i];
+    }
+
+    groups.forEach(function (g, i) {
+      var bar = g.querySelector('.bar');
+      var val = g.querySelector('.bar-val');
+      if (!bar || !val) return;
+
+      var vol = daily[i];
+
+      if (vol <= 0 || maxVol <= 0) {
+        bar.style.setProperty('--h', '5%');
+        val.textContent = '0';
+        bar.classList.add('dim');
+        bar.classList.remove('lime');
+      } else {
+        var pct = Math.round((vol / maxVol) * 90 + 5);
+        bar.style.setProperty('--h', pct + '%');
+        val.textContent = fmtVol(vol);
+        bar.classList.remove('dim');
+        if (i === 1 || i === 4) bar.classList.add('lime');
+        else bar.classList.remove('lime');
+      }
+    });
+  }
+
   /* ── Main Refresh ──────────────────────── */
 
   function refresh() {
@@ -193,6 +256,7 @@
       renderRecentLogs(history);
     }
 
+    renderWeeklyChart(history);
     bindEmptyButton();
   }
 
