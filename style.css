@@ -912,8 +912,17 @@ a {
   justify-content: center;
   border-radius: var(--radius-md);
   background: var(--accent-cyan-dim);
-  color: var(--accent-cyan);
-  font-size: 1.4rem;
+}
+
+.custom-muscle-icon {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.3));
+}
+
+.custom-muscle-icon[alt="Waist"] {
+  filter: grayscale(100%) contrast(1.2) brightness(0.8) drop-shadow(0 0 8px rgba(0, 255, 204, 0.3));
 }
 
 .muscle-card-count {

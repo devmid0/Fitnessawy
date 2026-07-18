@@ -24,20 +24,20 @@
 
   /* ── Muscle Visuals ────────────────────── */
 
-  var MUSCLE_VIS = {
-    'upper arms':   { icon: '💪', color: 'var(--accent-cyan)' },
-    'upper legs':   { icon: '🦵', color: 'var(--accent-lime)' },
-    'back':         { icon: '🔙', color: '#A078FF' },
-    'waist':        { icon: '🔥', color: '#FF6B6B' },
-    'chest':        { icon: '🫁', color: 'var(--accent-cyan)' },
-    'shoulders':    { icon: '🎯', color: 'var(--accent-lime)' },
-    'lower legs':   { icon: '🦿', color: '#A078FF' },
-    'lower arms':   { icon: '🤝', color: '#FFB84D' },
-    'cardio':       { icon: '❤️', color: '#FF6B6B' },
-    'neck':         { icon: '🦒', color: '#FFB84D' }
+  var anatomicalIconsMap = {
+    'Upper Arms': './icons/biceps.png',
+    'Upper Legs': './icons/upper leg.png',
+    'Back':       './icons/back.png',
+    'Waist':      './icons/core.png',
+    'Chest':      './icons/chest.png',
+    'Shoulders':  './icons/shoulder.png',
+    'Lower Legs': './icons/lower leg.png',
+    'Lower Arms': './icons/forearm.png',
+    'Cardio':     './icons/treadmill.png',
+    'Neck':       './icons/neck.png'
   };
 
-  var DEFAULT_VIS = { icon: '⚡', color: 'var(--accent-cyan)' };
+  var DEFAULT_VIS = { color: 'var(--accent-cyan)' };
 
   /* ── DOM refs ──────────────────────────── */
 
@@ -158,12 +158,16 @@
 
     var html = '';
     muscles.forEach(function (m) {
-      var vis = MUSCLE_VIS[m] || DEFAULT_VIS;
+      var src = anatomicalIconsMap[capitalize(m)];
       var count = muscleGroups[m].length;
       var label = capitalize(m);
 
       html += '<div class="muscle-card" data-muscle="' + esc(m) + '">';
-      html += '<div class="muscle-card-icon" style="background:' + vis.color + '15;color:' + vis.color + '">' + vis.icon + '</div>';
+      html += '<div class="muscle-card-icon">';
+      if (src) {
+        html += '<img src="' + esc(src) + '" alt="' + esc(label) + '" class="custom-muscle-icon" onerror="this.style.display=\'none\'">';
+      }
+      html += '</div>';
       html += '<span class="muscle-card-count">' + count + ' exercises</span>';
       html += '<span class="muscle-card-name">' + esc(label) + '</span>';
       html += '</div>';
