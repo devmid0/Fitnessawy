@@ -762,12 +762,12 @@ function renderAppTrophyRoom(sessions) {
     var accent = i === 0 ? 'var(--accent-gold)' : i === 1 ? 'var(--accent-lime)' : 'var(--accent-cyan)';
 
     html += '<div class="trophy-badge">';
-    html += '<div class="trophy-rank" style="color:' + accent + '">';
-    html += '<span class="trophy-rank-num">' + (i + 1) + '</span>';
-    html += '</div>';
-    html += '<div class="trophy-details">';
+    html += '<div class="trophy-left">';
+    html += '<span class="trophy-rank-num" style="color:' + accent + '">' + (i + 1) + '</span>';
     html += '<span class="trophy-exercise">' + loggerEsc(name) + '</span>';
-    html += '<span class="trophy-weight">' + pr.weight + ' <span class="trophy-weight-unit">kg</span></span>';
+    html += '</div>';
+    html += '<div class="trophy-right">';
+    html += '<span class="trophy-weight">' + pr.weight + '<span class="trophy-weight-unit">kg</span></span>';
     if (dateStr) html += '<span class="trophy-date">' + dateStr + '</span>';
     html += '</div>';
     html += '</div>';
@@ -1049,8 +1049,12 @@ window.bootMainApp = function (user) {
             if (mmInput) mmInput.value = (existing && existing.muscleMass != null) ? existing.muscleMass : '';
             modal.style.display = 'flex';
           }
-        } else {
-          alert('This feature is under development.');
+        } else if (label === 'Settings') {
+          var sm = document.getElementById('settings-modal');
+          if (sm) sm.style.display = 'flex';
+        } else if (label === 'Privacy & Security') {
+          var pm = document.getElementById('privacy-modal');
+          if (pm) pm.style.display = 'flex';
         }
       });
     });
@@ -1105,7 +1109,90 @@ window.bootMainApp = function (user) {
       });
     }
 
-    /* 6. Boot all modules — ForgeBrowser.init() fetches
+    /* 6. Bind Settings & Privacy modal close buttons + Clear App Data */
+    var settingsModal = document.getElementById('settings-modal');
+    var privacyModal = document.getElementById('privacy-modal');
+
+    var settingsClose = document.getElementById('settingsClose');
+    if (settingsClose && settingsModal) {
+      settingsClose.addEventListener('click', function () { settingsModal.style.display = 'none'; });
+    }
+    if (settingsModal) {
+      settingsModal.addEventListener('click', function (e) {
+        if (e.target === settingsModal) settingsModal.style.display = 'none';
+      });
+    }
+
+    var privacyClose = document.getElementById('privacyClose');
+    if (privacyClose && privacyModal) {
+      privacyClose.addEventListener('click', function () { privacyModal.style.display = 'none'; });
+    }
+    if (privacyModal) {
+      privacyModal.addEventListener('click', function (e) {
+        if (e.target === privacyModal) privacyModal.style.display = 'none';
+      });
+    }
+
+    /* ── Clear App Data ──────────────────────── */
+    var clearDataBtn = document.getElementById('settingsClearData');
+    if (clearDataBtn) {
+      clearDataBtn.addEventListener('click', function () {
+        if (confirm('WARNING: This will permanently delete all your workout logs, PRs, and body metrics. Are you sure?')) {
+          try { localStorage.removeItem('fitnessawy_sessions'); } catch (ex) {}
+          try { localStorage.removeItem('fitnessawy_body_metrics'); } catch (ex) {}
+          window.location.reload();
+        }
+      });
+    }
+
+    /* ── Change Password (Firebase) ──────────── */
+    var changePwBtn = document.getElementById('privacyChangePassword');
+    if (changePwBtn) {
+      changePwBtn.addEventListener('click', async function () {
+        var newPass = prompt('Enter your new password (minimum 6 characters):');
+        if (!newPass) return;
+        if (newPass.length < 6) {
+          alert('Password must be at least 6 characters.');
+          return;
+        }
+        try {
+          var authInstance = window.__forgeAuth.getAuth();
+          await window.__forgeAuth.updatePassword(authInstance.currentUser, newPass);
+          alert('Password updated successfully!');
+        } catch (err) {
+          console.error('[Forge] updatePassword failed:', err);
+          if (err.code === 'auth/requires-recent-login') {
+            alert('For security, please log out and log back in before changing your password.');
+          } else {
+            alert('Failed to update password: ' + (err.message || err));
+          }
+        }
+      });
+    }
+
+    /* ── Delete Account (Firebase) ───────────── */
+    var deleteAcctBtn = document.getElementById('privacyDeleteAccount');
+    if (deleteAcctBtn) {
+      deleteAcctBtn.addEventListener('click', async function () {
+        if (!confirm('CRITICAL: This will permanently delete your Forge account and cannot be undone. Proceed?')) return;
+        try {
+          var authInstance = window.__forgeAuth.getAuth();
+          await window.__forgeAuth.deleteUser(authInstance.currentUser);
+          try { localStorage.removeItem('fitnessawy_sessions'); } catch (ex) {}
+          try { localStorage.removeItem('fitnessawy_body_metrics'); } catch (ex) {}
+          window.location.reload();
+        } catch (err) {
+          console.error('[Forge] deleteUser failed:', err);
+          if (err.code === 'auth/requires-recent-login') {
+            alert('For security, please log out and log back in before deleting your account.');
+          } else {
+            alert('Failed to delete account: ' + (err.message || err));
+          }
+        }
+      });
+    }
+
+    /* 7. Boot all modules — ForgeBrowser.init() fetches
           exercises.json and renders the muscle grid.
           Each module is individually guarded so one failure
           cannot kill the others. */

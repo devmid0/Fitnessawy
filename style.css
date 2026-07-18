@@ -26,7 +26,6 @@
 
   --accent-gold: #FFD700;
   --accent-gold-dim: rgba(255, 215, 0, 0.10);
-  --accent-gold-glow: rgba(255, 215, 0, 0.30);
 
   --danger: #FF4444;
   --danger-dim: rgba(255, 68, 68, 0.12);
@@ -867,7 +866,46 @@ a {
 
 .modal-btn-primary:hover {
   background: #33FFD4;
-  box-shadow: 0 0 20px var(--accent-cyan-glow);
+}
+
+/* ── Modal Action Buttons (menu-row style) ──── */
+
+.modal-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--bg-surface);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+}
+
+.modal-menu-btn:hover {
+  background: var(--bg-elevated);
+}
+
+.modal-menu-btn:active {
+  background: var(--bg-hover);
+}
+
+.modal-menu-btn svg {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.modal-menu-btn.danger {
+  color: var(--danger);
+}
+
+.modal-menu-btn.danger svg {
+  color: var(--danger);
 }
 
 /* ============================================
@@ -2317,60 +2355,48 @@ a {
   border-radius: var(--radius-md);
   padding: var(--space-md);
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color var(--duration-fast) ease,
-              box-shadow var(--duration-normal) ease;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  transition: border-color var(--duration-fast) ease;
 }
 
 .trophy-badge:hover {
   border-color: rgba(255, 215, 0, 0.25);
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.06);
 }
 
-.trophy-badge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
-  opacity: 0;
-  transition: opacity var(--duration-normal) ease;
-}
-
-.trophy-badge:hover::before {
-  opacity: 1;
-}
-
-.trophy-rank {
-  display: inline-flex;
+.trophy-left {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--accent-gold);
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.trophy-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .trophy-rank-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: var(--radius-sm);
   background: var(--accent-gold-dim);
   font-size: 0.65rem;
   font-weight: 800;
+  flex-shrink: 0;
 }
 
 .trophy-exercise {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -2381,21 +2407,19 @@ a {
 }
 
 .trophy-weight {
-  font-size: 1.75rem;
-  font-weight: 900;
-  letter-spacing: -1px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: var(--accent-gold);
-  text-shadow: 0 0 12px var(--accent-gold-glow);
-  animation: goldPulse 3s ease-in-out infinite;
 }
 
 .trophy-weight-unit {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-tertiary);
-  margin-left: 2px;
+  margin-left: 3px;
 }
 
 .trophy-date {
@@ -2442,12 +2466,7 @@ a {
   max-width: 220px;
 }
 
-/* ── Gold Pulse Animation ────────────────── */
-
-@keyframes goldPulse {
-  0%, 100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.15); }
-  50%      { text-shadow: 0 0 18px rgba(255, 215, 0, 0.35); }
-}
+/* (goldPulse removed — clean trophy aesthetic) */
 
 /* ============================================
    WORKOUT LOG — EMPTY STATE

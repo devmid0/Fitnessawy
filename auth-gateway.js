@@ -38,9 +38,12 @@ async function loadFirebase() {
       signInWithEmailAndPassword: firebaseAuth.signInWithEmailAndPassword,
       createUserWithEmailAndPassword: firebaseAuth.createUserWithEmailAndPassword,
       updateProfile: firebaseAuth.updateProfile,
+      updatePassword: firebaseAuth.updatePassword,
+      deleteUser: firebaseAuth.deleteUser,
       signInWithPopup: firebaseAuth.signInWithPopup,
       onAuthStateChanged: firebaseAuth.onAuthStateChanged,
-      signOut: firebaseAuth.signOut
+      signOut: firebaseAuth.signOut,
+      getAuth: firebaseAuth.getAuth
     };
 
     firebaseReady = true;
