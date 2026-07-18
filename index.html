@@ -50,6 +50,9 @@
             <button class="btn-primary" id="btnRetryLoad">Retry</button>
           </div>
 
+          <!-- My Routines (dynamic) -->
+          <div id="myRoutines" class="my-routines"></div>
+
           <!-- Muscle Group Grid -->
           <div id="muscleGrid" class="muscle-grid" style="display:none"></div>
 
@@ -81,6 +84,10 @@
             <div class="fab-inner">
               <span class="fab-count" id="fabCount">0</span>
               <span class="fab-label">exercises selected</span>
+              <button class="fab-btn-ghost" id="btnSaveRoutine" title="Save as Routine">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save
+              </button>
               <button class="fab-btn" id="btnFabStart">
                 Start
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -337,6 +344,19 @@
       </section>
 
     </main>
+
+    <!-- Routine Name Modal -->
+    <div id="routineModal" class="modal-overlay" style="display:none">
+      <div class="modal-card">
+        <h3 class="modal-title">Save Routine</h3>
+        <p class="modal-desc">Give your routine a name so you can load it later.</p>
+        <input type="text" id="routineNameInput" class="modal-input" placeholder="e.g. Push Day A" maxlength="40" autocomplete="off">
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="modalCancel">Cancel</button>
+          <button class="modal-btn modal-btn-primary" id="modalSave">Save</button>
+        </div>
+      </div>
+    </div>
 
     <nav class="bottom-nav" id="bottomNav">
       <button class="nav-item active" data-view="workout">

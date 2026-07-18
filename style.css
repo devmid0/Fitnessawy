@@ -626,6 +626,245 @@ a {
 }
 
 /* ============================================
+   EXERCISE BROWSER — MY ROUTINES
+   ============================================ */
+
+.my-routines {
+  margin-bottom: var(--space-md);
+}
+
+.my-routines:empty {
+  display: none;
+}
+
+.mr-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: var(--space-sm);
+  padding-left: 2px;
+}
+
+.mr-scroll {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.mr-scroll::-webkit-scrollbar { display: none; }
+.mr-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+.mr-card {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg) var(--space-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+}
+
+.mr-card:hover {
+  border-color: var(--accent-cyan);
+  background: var(--bg-elevated);
+}
+
+.mr-card:active {
+  transform: scale(0.96);
+}
+
+.mr-card-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+}
+
+.mr-card-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.mr-card-count {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.mr-card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-base);
+  border: 1px solid var(--border-medium);
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all var(--duration-fast) ease;
+  pointer-events: none;
+}
+
+.mr-card:hover .mr-card-delete {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mr-card-delete:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--danger-dim);
+}
+
+/* ============================================
+   MODAL — ROUTINE NAME INPUT
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  animation: fadeIn 0.2s var(--ease-out) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  animation: modalSlide 0.3s var(--ease-spring) both;
+}
+
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: var(--space-xs);
+}
+
+.modal-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.modal-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-md);
+  background: var(--bg-base);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  box-sizing: border-box;
+}
+
+.modal-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px var(--accent-cyan-dim);
+}
+
+.modal-input::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.modal-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.modal-btn:active {
+  transform: scale(0.97);
+}
+
+.modal-btn-ghost {
+  background: var(--bg-base);
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+}
+
+.modal-btn-ghost:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text-primary);
+}
+
+.modal-btn-primary {
+  background: var(--accent-cyan);
+  color: var(--bg-base);
+}
+
+.modal-btn-primary:hover {
+  background: #33FFD4;
+  box-shadow: 0 0 20px var(--accent-cyan-glow);
+}
+
+/* ============================================
    EXERCISE BROWSER — MUSCLE GRID
    ============================================ */
 
@@ -987,6 +1226,30 @@ a {
 }
 
 .fab-btn:active {
+  transform: scale(0.96);
+}
+
+.fab-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  height: 40px;
+  padding: 0 var(--space-md);
+  background: transparent;
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) ease;
+}
+
+.fab-btn-ghost:hover {
+  background: var(--accent-cyan-dim);
+  box-shadow: 0 0 16px var(--accent-cyan-glow);
+}
+
+.fab-btn-ghost:active {
   transform: scale(0.96);
 }
 

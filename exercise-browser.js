@@ -44,7 +44,9 @@
   var exLoading, exError, muscleGrid, exerciseList;
   var exListTitle, exListCount, exListContainer, exSentinel;
   var exSearchInput, btnExBack, btnRetryLoad;
-  var workoutFab, fabCount, btnFabStart;
+  var workoutFab, fabCount, btnFabStart, btnSaveRoutine;
+  var myRoutines;
+  var routineModal, routineNameInput, modalCancel, modalSave;
 
   function cacheDom() {
     exLoading       = document.getElementById('exLoading');
@@ -61,6 +63,12 @@
     workoutFab      = document.getElementById('workoutFab');
     fabCount        = document.getElementById('fabCount');
     btnFabStart     = document.getElementById('btnFabStart');
+    btnSaveRoutine  = document.getElementById('btnSaveRoutine');
+    myRoutines      = document.getElementById('myRoutines');
+    routineModal    = document.getElementById('routineModal');
+    routineNameInput = document.getElementById('routineNameInput');
+    modalCancel     = document.getElementById('modalCancel');
+    modalSave       = document.getElementById('modalSave');
   }
 
   /* ── Events ────────────────────────────── */
@@ -70,6 +78,16 @@
     btnRetryLoad.addEventListener('click', fetchExercises);
     exSearchInput.addEventListener('input', onSearch);
     btnFabStart.addEventListener('click', onStartWorkout);
+    btnSaveRoutine.addEventListener('click', openSaveModal);
+    modalCancel.addEventListener('click', closeModal);
+    modalSave.addEventListener('click', confirmSaveRoutine);
+    routineNameInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') confirmSaveRoutine();
+      if (e.key === 'Escape') closeModal();
+    });
+    routineModal.addEventListener('click', function (e) {
+      if (e.target === routineModal) closeModal();
+    });
   }
 
   /* ── Fetch ─────────────────────────────── */
@@ -84,6 +102,7 @@
     exLoading.style.display = 'none';
     exError.querySelector('p').textContent = msg;
     exError.style.display = '';
+    if (myRoutines) myRoutines.style.display = 'none';
     muscleGrid.style.display = 'none';
     exerciseList.style.display = 'none';
     workoutFab.style.display = 'none';
@@ -130,6 +149,8 @@
     selectedMuscle = null;
     exLoading.style.display = 'none';
     exError.style.display = 'none';
+    if (myRoutines) renderMyRoutines();
+    if (myRoutines) myRoutines.style.display = '';
     muscleGrid.style.display = '';
     exerciseList.style.display = 'none';
     workoutFab.style.display = 'none';
@@ -162,6 +183,7 @@
 
   function showExerciseList(muscle) {
     selectedMuscle = muscle;
+    if (myRoutines) myRoutines.style.display = 'none';
     muscleGrid.style.display = 'none';
     exerciseList.style.display = '';
     updateFab();
@@ -279,6 +301,152 @@
     if (observer) { observer.disconnect(); observer = null; }
   }
 
+  /* ── Custom Routines (localStorage) ──── */
+
+  var ROUTINES_KEY = 'customRoutines';
+
+  function readRoutines() {
+    try {
+      var raw = localStorage.getItem(ROUTINES_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeRoutines(list) {
+    try {
+      localStorage.setItem(ROUTINES_KEY, JSON.stringify(list));
+    } catch (e) { /* quota exceeded — silently fail */ }
+  }
+
+  function openSaveModal() {
+    if (!selectedExercises.length) return;
+    routineNameInput.value = '';
+    routineModal.style.display = '';
+    setTimeout(function () { routineNameInput.focus(); }, 100);
+  }
+
+  function closeModal() {
+    routineModal.style.display = 'none';
+  }
+
+  function confirmSaveRoutine() {
+    var name = routineNameInput.value.trim();
+    if (!name) {
+      routineNameInput.focus();
+      return;
+    }
+
+    var routine = {
+      name: name,
+      exercises: selectedExercises.map(function (ex) {
+        return { name: ex.name, targetSets: ex.targetSets, targetReps: ex.targetReps };
+      })
+    };
+
+    var routines = readRoutines();
+    routines.unshift(routine);
+    writeRoutines(routines);
+
+    closeModal();
+    renderMyRoutines();
+  }
+
+  function deleteRoutine(index, e) {
+    e.stopPropagation();
+    var routines = readRoutines();
+    if (index < 0 || index >= routines.length) return;
+    routines.splice(index, 1);
+    writeRoutines(routines);
+    renderMyRoutines();
+  }
+
+  function loadRoutine(index) {
+    var routines = readRoutines();
+    var routine = routines[index];
+    if (!routine || !routine.exercises.length) return;
+
+    selectedExercises = [];
+
+    routine.exercises.forEach(function (t) {
+      var match = allExercises.find(function (ex) {
+        return ex.name.toLowerCase() === t.name.toLowerCase();
+      });
+      if (match) {
+        selectedExercises.push({
+          id: match.id,
+          name: match.name,
+          target: match.target || '',
+          equipment: match.equipment || '',
+          body_part: match.body_part || match.category || '',
+          targetSets: t.targetSets,
+          targetReps: t.targetReps
+        });
+      }
+    });
+
+    document.querySelectorAll('.ex-card-add.added').forEach(function (btn) {
+      btn.classList.remove('added');
+      btn.innerHTML = SVG_PLUS;
+    });
+
+    selectedExercises.forEach(function (sel) {
+      var card = exListContainer.querySelector('.ex-card[data-id="' + sel.id + '"]');
+      if (card) {
+        var btn = card.querySelector('.ex-card-add');
+        if (btn) {
+          btn.classList.add('added');
+          btn.innerHTML = SVG_CHECK;
+        }
+      }
+    });
+
+    updateFab();
+  }
+
+  function renderMyRoutines() {
+    if (!myRoutines) return;
+    var routines = readRoutines();
+
+    if (!routines.length) {
+      myRoutines.innerHTML = '';
+      myRoutines.style.display = 'none';
+      return;
+    }
+
+    myRoutines.style.display = '';
+    var html = '<h3 class="mr-title">My Routines</h3><div class="mr-scroll">';
+
+    routines.forEach(function (r, i) {
+      html += '<div class="mr-card" data-routine="' + i + '">';
+      html += '<button class="mr-card-delete" data-delete="' + i + '" title="Delete routine">';
+      html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      html += '</button>';
+      html += '<div class="mr-card-icon">';
+      html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+      html += '</div>';
+      html += '<span class="mr-card-name">' + esc(r.name) + '</span>';
+      html += '<span class="mr-card-count">' + r.exercises.length + ' exercises</span>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+    myRoutines.innerHTML = html;
+
+    myRoutines.querySelector('.mr-scroll').addEventListener('click', function (e) {
+      var delBtn = e.target.closest('.mr-card-delete');
+      if (delBtn) {
+        deleteRoutine(+delBtn.dataset.delete, e);
+        return;
+      }
+      var card = e.target.closest('.mr-card');
+      if (card) loadRoutine(+card.dataset.routine);
+    });
+  }
+
   /* ── Add / Remove Exercise ─────────────── */
 
   var SVG_PLUS = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
@@ -372,6 +540,7 @@
   function init() {
     cacheDom();
     bindEvents();
+    renderMyRoutines();
     if (!allExercises.length) fetchExercises();
   }
 
@@ -387,11 +556,13 @@
     document.addEventListener('DOMContentLoaded', function () {
       cacheDom();
       bindEvents();
+      renderMyRoutines();
       fetchExercises();
     });
   } else {
     cacheDom();
     bindEvents();
+    renderMyRoutines();
     fetchExercises();
   }
 
