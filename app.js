@@ -1,5 +1,5 @@
 /* ============================================
-   FORGE — SPA Controller
+   Fitnessawy — SPA Controller
    ============================================ */
 
 'use strict';
@@ -42,7 +42,7 @@ function switchView(name) {
 
     /* refresh profile analytics on every visit */
     if (name === 'profile' && window.ForgeProfile) {
-      try { window.ForgeProfile.refresh(); } catch (e) { console.warn('[Forge] Profile refresh failed:', e); }
+      try { window.ForgeProfile.refresh(); } catch (e) { console.warn('[Fitnessawy] Profile refresh failed:', e); }
     }
 
     /* refresh dashboard stats on every visit */
@@ -126,9 +126,9 @@ document.addEventListener('touchend', function (e) {
 /* ── Init ──────────────────────────────── */
 
 function init() {
-  try { switchView(currentView); } catch (e) { console.warn('[Forge] switchView failed:', e); }
-  try { updateDashboardStats(); } catch (e) { console.warn('[Forge] init updateDashboardStats failed:', e); }
-  try { requestAnimationFrame(animateStatBars); } catch (e) { console.warn('[Forge] animateStatBars failed:', e); }
+  try { switchView(currentView); } catch (e) { console.warn('[Fitnessawy] switchView failed:', e); }
+  try { updateDashboardStats(); } catch (e) { console.warn('[Fitnessawy] init updateDashboardStats failed:', e); }
+  try { requestAnimationFrame(animateStatBars); } catch (e) { console.warn('[Fitnessawy] animateStatBars failed:', e); }
 }
 
 /* ── Expose globally for cross-module refs ── */
@@ -492,7 +492,7 @@ function readSessions() {
     }
     return clean;
   } catch (e) {
-    console.warn('[Forge] readSessions failed, returning empty array:', e);
+    console.warn('[Fitnessawy] readSessions failed, returning empty array:', e);
     return [];
   }
 }
@@ -510,7 +510,7 @@ function updateDashboardStats() {
   try {
     hydrateDashboard();
   } catch (e) {
-    console.warn('[Forge] Dashboard hydration failed — exercises will still render:', e);
+    console.warn('[Fitnessawy] Dashboard hydration failed — exercises will still render:', e);
   }
 }
 
@@ -1061,7 +1061,7 @@ window.bootMainApp = function (user) {
             window.__forgeAuth.signOut(authInstance).then(function () {
               window.location.reload();
             }).catch(function (err) {
-              console.error('[Forge] signOut failed:', err);
+              console.error('[Fitnessawy] signOut failed:', err);
               window.location.reload();
             });
           } else {
@@ -1117,7 +1117,7 @@ window.bootMainApp = function (user) {
         if (bmModal) bmModal.style.display = 'none';
 
         /* Re-hydrate dashboard to reflect new values immediately */
-        try { hydrateDashboard(); } catch (ex) { console.warn('[Forge] hydrateDashboard after save failed:', ex); }
+        try { hydrateDashboard(); } catch (ex) { console.warn('[Fitnessawy] hydrateDashboard after save failed:', ex); }
       });
     }
 
@@ -1174,7 +1174,7 @@ window.bootMainApp = function (user) {
           await window.__forgeAuth.updatePassword(authInstance.currentUser, newPass);
           await window.ForgeDialog.alert('Success', 'Password updated successfully!');
         } catch (err) {
-          console.error('[Forge] updatePassword failed:', err);
+          console.error('[Fitnessawy] updatePassword failed:', err);
           if (err.code === 'auth/requires-recent-login') {
             await window.ForgeDialog.alert('Re-auth Required', 'For security, please log out and log back in before changing your password.');
           } else {
@@ -1188,7 +1188,7 @@ window.bootMainApp = function (user) {
     var deleteAcctBtn = document.getElementById('privacyDeleteAccount');
     if (deleteAcctBtn) {
       deleteAcctBtn.addEventListener('click', async function () {
-        var yes = await window.ForgeDialog.confirm('Delete Account', 'CRITICAL: This will permanently delete your Forge account and cannot be undone. Proceed?', { danger: true, confirmLabel: 'Delete Account' });
+        var yes = await window.ForgeDialog.confirm('Delete Account', 'CRITICAL: This will permanently delete your Fitnessawy account and cannot be undone. Proceed?', { danger: true, confirmLabel: 'Delete Account' });
         if (!yes) return;
         try {
           var authInstance = window.__forgeAuth.getAuth();
@@ -1197,7 +1197,7 @@ window.bootMainApp = function (user) {
           try { localStorage.removeItem('fitnessawy_body_metrics'); } catch (ex) {}
           window.location.reload();
         } catch (err) {
-          console.error('[Forge] deleteUser failed:', err);
+          console.error('[Fitnessawy] deleteUser failed:', err);
           if (err.code === 'auth/requires-recent-login') {
             await window.ForgeDialog.alert('Re-auth Required', 'For security, please log out and log back in before deleting your account.');
           } else {
@@ -1211,22 +1211,22 @@ window.bootMainApp = function (user) {
           exercises.json and renders the muscle grid.
           Each module is individually guarded so one failure
           cannot kill the others. */
-    try { init(); } catch (e) { console.warn('[Forge] init() failed:', e); }
+    try { init(); } catch (e) { console.warn('[Fitnessawy] init() failed:', e); }
 
     if (window.ForgeBrowser) {
-      try { window.ForgeBrowser.init(); } catch (e) { console.warn('[Forge] ForgeBrowser.init() failed:', e); }
+      try { window.ForgeBrowser.init(); } catch (e) { console.warn('[Fitnessawy] Fitnessawy Browser.init() failed:', e); }
     }
     if (window.ForgeLogger) {
-      try { window.ForgeLogger.init(); } catch (e) { console.warn('[Forge] ForgeLogger.init() failed:', e); }
+      try { window.ForgeLogger.init(); } catch (e) { console.warn('[Fitnessawy] Fitnessawy Logger.init() failed:', e); }
     }
     if (window.ForgeProfile) {
-      try { window.ForgeProfile.refresh(); } catch (e) { console.warn('[Forge] ForgeProfile.refresh() failed:', e); }
+      try { window.ForgeProfile.refresh(); } catch (e) { console.warn('[Fitnessawy] Fitnessawy Profile.refresh() failed:', e); }
     }
-    try { updateDashboardStats(); } catch (e) { console.warn('[Forge] updateDashboardStats() failed:', e); }
+    try { updateDashboardStats(); } catch (e) { console.warn('[Fitnessawy] updateDashboardStats() failed:', e); }
 
   } catch (fatalErr) {
     /* ── Catch-all: if anything above throws uncaught, show the error ── */
-    console.error('[Forge] bootMainApp FATAL:', fatalErr);
+    console.error('[Fitnessawy] bootMainApp FATAL:', fatalErr);
 
     var loader = document.getElementById('exLoading');
     if (loader) loader.style.display = 'none';

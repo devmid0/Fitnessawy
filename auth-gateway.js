@@ -1,5 +1,5 @@
 /* ============================================
-   FORGE — Auth Gateway (Firebase v10)
+   Fitnessawy — Auth Gateway (Firebase v10)
    Fail-safe: UI bootstraps FIRST, Firebase
    loads dynamically so a CDN failure cannot
    kill the entire auth gateway.

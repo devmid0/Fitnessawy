@@ -1,5 +1,5 @@
 /* ============================================
-   FORGE — Exercise Browser
+   Fitnessawy — Exercise Browser
    Fetches 1,324 exercises from JSON,
    renders muscle grid + paginated exercise list.
    ============================================ */

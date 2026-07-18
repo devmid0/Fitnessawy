@@ -1,5 +1,5 @@
 /* ============================================
-   FORGE — Profile Analytics
+   Fitnessawy — Profile Analytics
    Reads workoutHistory from localStorage,
    computes stats, renders profile data.
    ============================================ */
@@ -725,7 +725,7 @@ function bindExport() {
 
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'forge-fitness-backup.json';
+    a.download = 'fitnessawy-backup.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

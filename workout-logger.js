@@ -1,5 +1,5 @@
 /* ============================================
-   FORGE — Workout Logger
+   Fitnessawy — Workout Logger
    Timestamp-based rest timer, dynamic set
    management, localStorage persistence.
    ============================================ */
