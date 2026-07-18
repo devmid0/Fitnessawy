@@ -1055,6 +1055,18 @@ window.bootMainApp = function (user) {
         } else if (label === 'Privacy & Security') {
           var pm = document.getElementById('privacy-modal');
           if (pm) pm.style.display = 'flex';
+        } else if (label === 'Log Out') {
+          if (window.__forgeAuth) {
+            var authInstance = window.__forgeAuth.getAuth();
+            window.__forgeAuth.signOut(authInstance).then(function () {
+              window.location.reload();
+            }).catch(function (err) {
+              console.error('[Forge] signOut failed:', err);
+              window.location.reload();
+            });
+          } else {
+            window.location.reload();
+          }
         }
       });
     });
