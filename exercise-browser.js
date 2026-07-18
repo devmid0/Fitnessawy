@@ -76,7 +76,6 @@ function bindEvents() {
   btnExBack.addEventListener('click', showMuscleGrid);
   btnRetryLoad.addEventListener('click', fetchExercises);
   exSearchInput.addEventListener('input', onSearch);
-  btnFabStart.addEventListener('click', onStartWorkout);
   btnSaveRoutine.addEventListener('click', openSaveModal);
   modalCancel.addEventListener('click', closeModal);
   modalSave.addEventListener('click', confirmSaveRoutine);
@@ -382,6 +381,7 @@ function loadRoutine(index) {
       selectedExercises.push({
         id: match.id,
         name: match.name,
+        gif_url: match.gif_url || '',
         target: match.target || '',
         equipment: match.equipment || '',
         body_part: match.body_part || match.category || '',
@@ -466,6 +466,7 @@ function toggleExercise(ex, btn) {
     selectedExercises.push({
       id: ex.id,
       name: ex.name,
+      gif_url: ex.gif_url || '',
       target: ex.target || '',
       equipment: ex.equipment || '',
       body_part: ex.body_part || ex.category || '',
@@ -550,7 +551,10 @@ function init() {
 window.ForgeBrowser = {
   init: init,
   isLoaded: function () { return allExercises.length > 0; },
-  resetSelection: resetWorkoutSelectionUI
+  resetSelection: resetWorkoutSelectionUI,
+  getSelectedCount: function () { return selectedExercises.length; },
+  getSelectedExercises: function () { return selectedExercises.slice(); },
+  startSelectedWorkout: onStartWorkout
 };
 
 export { init, resetWorkoutSelectionUI };

@@ -3107,6 +3107,69 @@ a {
 }
 
 /* ============================================
+   WORKOUT LOGGER VIEW — Toolbar & Header
+   ============================================ */
+
+.logger-toolbar {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.logger-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--space-xs) 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logger-back-btn:active {
+  opacity: 0.7;
+}
+
+.logger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.logger-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.logger-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-xs);
+}
+
+.log-ex-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
+.log-ex-thumb.ex-card-fallback {
+  background: var(--bg-surface);
+  opacity: 0.5;
+}
+
+/* ============================================
    FINISH WORKOUT
    ============================================ */
 
@@ -3162,6 +3225,47 @@ a {
 
 .stats-section {
   transition: opacity var(--duration-normal) ease;
+}
+
+/* ============================================
+   PROGRESS — Live Summary Stats
+   ============================================ */
+
+.progress-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.progress-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.progress-stat-value {
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
 }
 
 /* ============================================

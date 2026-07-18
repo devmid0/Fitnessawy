@@ -6,7 +6,7 @@
 
 'use strict';
 
-var HISTORY_KEY = 'workoutHistory';
+var HISTORY_KEY = 'fitnessawy_sessions';
 var PROFILE_KEY = 'forge_profile';
 var SETTINGS_KEY = 'forge_settings';
 var ACCENT_KEY = 'forge_accent';
@@ -51,7 +51,7 @@ var accentColorSelector;
 var btnDownloadBackup, btnImportBackup, importBackupFile, btnDeleteAll;
 
 function cacheDom() {
-  analyticsGrid   = document.getElementById('profileAnalytics');
+  analyticsGrid   = document.getElementById('profileAnalyticsGrid');
   emptyState      = document.getElementById('profileEmpty');
   recentSection   = document.getElementById('profileRecentSection');
   recentLogs      = document.getElementById('profileRecentLogs');
@@ -164,16 +164,24 @@ function computePRs(history) {
     var sessionDate = session.date || '';
 
     session.exercises.forEach(function (ex) {
-      if (!ex.sets) return;
+      if (!ex.sets || !ex.sets.length) return;
 
-      ex.sets.forEach(function (set) {
-        var w = parseFloat(set.weight) || 0;
-        if (w <= 0) return;
-
-        if (!prMap[ex.name] || w > prMap[ex.name].weight) {
-          prMap[ex.name] = { weight: w, date: sessionDate, reps: set.reps || 0 };
+      /* Find the absolute highest single weight across ALL sets of this exercise */
+      var maxWeight = 0;
+      var maxWeightReps = 0;
+      for (var k = 0; k < ex.sets.length; k++) {
+        var w = parseFloat(ex.sets[k].weight) || 0;
+        if (w > maxWeight) {
+          maxWeight = w;
+          maxWeightReps = parseFloat(ex.sets[k].reps) || 0;
         }
-      });
+      }
+
+      if (maxWeight <= 0) return;
+
+      if (!prMap[ex.name] || maxWeight > prMap[ex.name].weight) {
+        prMap[ex.name] = { weight: maxWeight, date: sessionDate, reps: maxWeightReps };
+      }
     });
   });
 
@@ -230,40 +238,27 @@ function renderTrophyRoom(history) {
 /* ── Render Analytics Cards ────────────── */
 
 function renderAnalytics(stats) {
-  analyticsGrid.innerHTML =
-    '<div class="pa-card">' +
-      '<div class="pa-icon cyan">' +
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
-      '</div>' +
-      '<span class="pa-value">' + stats.daysTrained + '</span>' +
-      '<span class="pa-label">Days<br>Trained</span>' +
-    '</div>' +
-    '<div class="pa-card">' +
-      '<div class="pa-icon lime">' +
-        stats.topMuscleIcon +
-      '</div>' +
-      '<span class="pa-value">' + esc(stats.topMuscle) + '</span>' +
-      '<span class="pa-label">Most<br>Targeted</span>' +
-    '</div>' +
-    '<div class="pa-card">' +
-      '<div class="pa-icon purple">' +
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
-      '</div>' +
-      '<span class="pa-value">' + fmtVol(stats.totalVolume) + '</span>' +
-      '<span class="pa-label">Total<br>Volume</span>' +
-    '</div>';
+  var daysEl = document.getElementById('profile-days-trained');
+  var muscleEl = document.getElementById('profile-most-targeted');
+  var volumeEl = document.getElementById('profile-total-volume');
+
+  if (daysEl) daysEl.textContent = stats.daysTrained;
+  if (muscleEl) muscleEl.textContent = stats.topMuscle;
+  if (volumeEl) volumeEl.textContent = fmtVol(stats.totalVolume);
 }
 
 /* ── Render Recent Logs ────────────────── */
 
 function renderRecentLogs(history) {
+  if (!recentSection || !recentLogs) return;
+
   if (history.length === 0) {
     recentSection.style.display = 'none';
     return;
   }
 
   recentSection.style.display = '';
-  logCount.textContent = history.length;
+  if (logCount) logCount.textContent = history.length;
 
   var recent = history.slice(0, RECENT_LIMIT);
   var html = '';
@@ -863,11 +858,18 @@ function refresh() {
   refreshSettingsUI();
 
   if (history.length === 0) {
-    analyticsGrid.innerHTML = '';
-    emptyState.style.display = '';
-    recentSection.style.display = 'none';
+    if (analyticsGrid) {
+      var daysEl = document.getElementById('profile-days-trained');
+      var muscleEl = document.getElementById('profile-most-targeted');
+      var volumeEl = document.getElementById('profile-total-volume');
+      if (daysEl) daysEl.textContent = '0';
+      if (muscleEl) muscleEl.textContent = '\u2014';
+      if (volumeEl) volumeEl.textContent = '0';
+    }
+    if (emptyState) emptyState.style.display = '';
+    if (recentSection) recentSection.style.display = 'none';
   } else {
-    emptyState.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'none';
     var stats = computeStats(history);
     renderAnalytics(stats);
     renderRecentLogs(history);
@@ -956,6 +958,7 @@ function esc(s) {
 
 window.ForgeProfile = {
   refresh: refresh,
+  renderWeeklyChart: renderWeeklyChart,
   getWeightUnit: function () {
     var s = readSettings();
     return s.weightUnit || 'kg';

@@ -202,6 +202,35 @@
         </div>
       </section>
 
+      <!-- WORKOUT LOGGER VIEW (injected by app.js) -->
+      <section id="workout-logger-view" style="display:none">
+        <div class="view-scroll">
+          <div class="logger-toolbar">
+            <button class="logger-back-btn" id="loggerBackBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              Back
+            </button>
+          </div>
+          <div class="logger-header">
+            <div class="logger-header-left">
+              <h2 class="log-workout-name" id="loggerWorkoutName">Workout</h2>
+              <span class="log-duration" id="loggerDuration">00:00</span>
+            </div>
+            <div class="logger-header-right">
+              <span class="log-ex-count" id="loggerExCount">0 exercises</span>
+              <span class="log-volume" id="loggerVolume">0 kg</span>
+            </div>
+          </div>
+          <div id="loggerExercises" class="log-exercises"></div>
+          <div class="log-finish-area">
+            <button id="loggerFinishBtn" class="btn-finish btn-full">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Finish Workout
+            </button>
+          </div>
+        </div>
+      </section>
+
       <!-- PROGRESS VIEW -->
       <section id="view-progress" class="view">
         <div class="view-scroll">
@@ -258,6 +287,22 @@
           <!-- Stats Section (hidden during active workout) -->
           <div id="statsSection" class="stats-section">
 
+            <!-- Live Summary Stats -->
+            <div class="progress-stats-row" id="progressStatsRow">
+              <div class="progress-stat-card">
+                <span class="progress-stat-value" id="progress-total-workouts">0</span>
+                <span class="progress-stat-label">Total Workouts</span>
+              </div>
+              <div class="progress-stat-card">
+                <span class="progress-stat-value" id="progress-total-volume">0</span>
+                <span class="progress-stat-label">Total Volume</span>
+              </div>
+              <div class="progress-stat-card">
+                <span class="progress-stat-value" id="progress-days-trained">0</span>
+                <span class="progress-stat-label">Days Active</span>
+              </div>
+            </div>
+
             <div class="section-header">
               <h2 class="section-title">Your Progress</h2>
               <span class="section-badge accent-lime">+12%</span>
@@ -272,33 +317,33 @@
                   <button class="toggle-btn" data-chart="year">Y</button>
                 </div>
               </div>
-              <div class="bar-chart">
+              <div class="bar-chart" id="weeklyVolumeChart">
                 <div class="bar-group">
-                  <div class="bar" style="--h:45%"><span class="bar-val">12k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Mon</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar lime" style="--h:70%"><span class="bar-val">18k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Tue</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar" style="--h:55%"><span class="bar-val">14k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Wed</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar" style="--h:85%"><span class="bar-val">22k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Thu</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar lime" style="--h:60%"><span class="bar-val">16k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Fri</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar" style="--h:30%"><span class="bar-val">8k</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Sat</span>
                 </div>
                 <div class="bar-group">
-                  <div class="bar dim" style="--h:10%"><span class="bar-val">—</span></div>
+                  <div class="bar dim" style="--h:5%"><span class="bar-val">0</span></div>
                   <span class="bar-day">Sun</span>
                 </div>
               </div>
@@ -311,23 +356,23 @@
             <div class="metric-grid">
               <div class="metric-card">
                 <span class="metric-label">Weight</span>
-                <span class="metric-value">82.4 <small>kg</small></span>
-                <span class="metric-change down">-1.2</span>
+                <span class="metric-value" id="progress-weight">-- <small>kg</small></span>
+                <span class="metric-change neutral" id="progress-weight-change">&mdash;</span>
               </div>
               <div class="metric-card">
                 <span class="metric-label">Body Fat</span>
-                <span class="metric-value">16.8 <small>%</small></span>
-                <span class="metric-change down">-0.4</span>
+                <span class="metric-value" id="progress-bodyfat">-- <small>%</small></span>
+                <span class="metric-change neutral" id="progress-bodyfat-change">&mdash;</span>
               </div>
               <div class="metric-card">
                 <span class="metric-label">Muscle Mass</span>
-                <span class="metric-value">38.2 <small>kg</small></span>
-                <span class="metric-change up">+0.6</span>
+                <span class="metric-value" id="progress-muscle">-- <small>kg</small></span>
+                <span class="metric-change neutral" id="progress-muscle-change">&mdash;</span>
               </div>
               <div class="metric-card">
                 <span class="metric-label">BMI</span>
-                <span class="metric-value">23.1</span>
-                <span class="metric-change neutral">—</span>
+                <span class="metric-value" id="progress-bmi">--</span>
+                <span class="metric-change neutral" id="progress-bmi-change">&mdash;</span>
               </div>
             </div>
 
@@ -335,7 +380,7 @@
               <h2 class="section-title" style="font-size:1rem">Personal Records</h2>
             </div>
 
-            <div class="pr-list">
+            <div class="pr-list" id="progressPRList">
               <div class="pr-row">
                 <div class="pr-icon">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M8 4v4M16 4v4M8 16v4M16 16v4"/></svg>
@@ -380,78 +425,103 @@
           <!-- ── Main Profile Content ──────────── -->
           <div id="profileMain">
 
+            <!-- Profile Header -->
             <div class="profile-hero">
               <div class="avatar">
-                <img id="profileAvatarImg" src="" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover">
-                <span id="profileAvatarText" class="avatar-text">MA</span>
+                <img id="pf-avatar" src="" alt="Profile" style="display:none;width:100%;height:100%;border-radius:50%;object-fit:cover">
+                <span id="pf-avatar-text" class="avatar-text">DM</span>
                 <div class="avatar-ring"></div>
               </div>
-              <h2 id="profileNameDisplay" class="profile-name">Mido A.</h2>
-              <p id="profileEmailDisplay" class="profile-sub"></p>
-              <p id="profileSubDisplay" class="profile-sub">Pro Member · Since Jan 2026</p>
+              <h2 id="pf-name" class="profile-name">Devmido</h2>
+              <p id="pf-role" class="profile-sub">Pro Member</p>
             </div>
 
-            <!-- Analytics Cards (dynamic) -->
-            <div id="profileAnalytics" class="profile-analytics-grid"></div>
+            <!-- Stats Grid -->
+            <div class="profile-analytics-grid" id="profileAnalyticsGrid">
+              <div class="pa-card">
+                <div class="pa-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <span class="pa-value" id="profile-days-trained">0</span>
+                <span class="pa-label">Days<br>Trained</span>
+              </div>
+              <div class="pa-card">
+                <div class="pa-icon lime">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/></svg>
+                </div>
+                <span class="pa-value" id="profile-most-targeted">&mdash;</span>
+                <span class="pa-label">Most<br>Targeted</span>
+              </div>
+              <div class="pa-card">
+                <div class="pa-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <span class="pa-value" id="profile-total-volume">0</span>
+                <span class="pa-label">Total<br>Volume</span>
+              </div>
+            </div>
 
-            <!-- Trophy Room — Personal Records (dynamic) -->
-            <div id="trophyRoom" class="trophy-room" style="display:none">
+            <!-- Trophy Room -->
+            <div class="trophy-room">
               <div class="section-header">
                 <h2 class="section-title" style="font-size:1rem">
                   <span style="color:var(--accent-gold)">&#9733;</span> Trophy Room
                 </h2>
                 <span class="section-badge trophy-section-badge">PRs</span>
               </div>
-              <div id="trophyGrid" class="trophy-grid"></div>
-            </div>
-
-            <!-- Empty State (dynamic) -->
-            <div id="profileEmpty" class="profile-empty" style="display:none">
-              <div class="profile-empty-icon">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M8 4v4M16 4v4M8 16v4M16 16v4"/></svg>
+              <div class="trophy-placeholder" id="trophyContent">
+                <p>No personal records yet. Complete workouts to earn trophies!</p>
               </div>
-              <h3 class="profile-empty-title">No Workouts Yet</h3>
-              <p class="profile-empty-desc">Complete your first workout and your analytics will appear here.</p>
-              <button class="btn-primary" id="btnProfileStart">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Start First Workout
-              </button>
             </div>
 
-            <!-- Recent Logs Section (dynamic) -->
-            <div id="profileRecentSection" class="profile-recent-section" style="display:none">
+            <!-- Recent Sessions -->
+            <div class="profile-recent-section" id="profileRecentSection">
               <div class="section-header">
                 <h2 class="section-title" style="font-size:1rem">Recent Sessions</h2>
-                <span id="profileLogCount" class="section-badge accent-cyan">0</span>
+                <span class="section-badge" id="profileLogCount">0</span>
               </div>
-              <div id="profileRecentLogs" class="profile-log-list"></div>
+              <div class="profile-log-list" id="profileRecentLogs">
+                <div class="profile-log-item">
+                  <div class="profile-log-dot cyan"></div>
+                  <div class="profile-log-info">
+                    <div class="profile-log-name">Upper Arms Workout</div>
+                    <div class="profile-log-date">Recent session</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
+            <!-- Menu -->
             <div class="profile-menu">
-              <button class="menu-row" data-action="edit-profile">
+              <button class="menu-row profile-menu-btn">
                 <div class="menu-left">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   <span>Edit Profile</span>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
-              <button class="menu-row" data-action="settings">
+              <button class="menu-row profile-menu-btn">
                 <div class="menu-left">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                   <span>Settings</span>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
-              <button class="menu-row" data-action="privacy">
+              <button class="menu-row profile-menu-btn">
                 <div class="menu-left">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   <span>Privacy &amp; Security</span>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
+              <button class="menu-row profile-menu-btn">
+                <div class="menu-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>Log Out</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </div>
-
-            <button class="btn-ghost btn-full" id="btnLogOut">Log Out</button>
 
           </div><!-- /profileMain -->
 
@@ -678,6 +748,37 @@
     </nav>
 
     </main><!-- /app-core -->
+
+    <!-- Body Metrics Modal -->
+    <div class="modal-overlay" id="bodyMetricsModal" style="display:none">
+      <div class="modal-card">
+        <h3 class="modal-title">Body Metrics</h3>
+        <p class="modal-desc">Track your body composition over time.</p>
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+          <div style="display:flex;align-items:center;gap:var(--space-sm)">
+            <label style="flex:0 0 90px;font-size:0.82rem;color:var(--text-secondary);font-weight:600">Weight</label>
+            <input type="number" class="modal-input" id="inputBodyWeight" placeholder="e.g. 82.5" inputmode="decimal" min="0" step="0.1" style="flex:1">
+            <span style="font-size:0.78rem;color:var(--text-tertiary);font-weight:600">kg</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-sm)">
+            <label style="flex:0 0 90px;font-size:0.82rem;color:var(--text-secondary);font-weight:600">Body Fat</label>
+            <input type="number" class="modal-input" id="inputBodyFat" placeholder="e.g. 16.8" inputmode="decimal" min="0" max="60" step="0.1" style="flex:1">
+            <span style="font-size:0.78rem;color:var(--text-tertiary);font-weight:600">%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-sm)">
+            <label style="flex:0 0 90px;font-size:0.82rem;color:var(--text-secondary);font-weight:600">Muscle Mass</label>
+            <input type="number" class="modal-input" id="inputMuscleMass" placeholder="e.g. 38.2" inputmode="decimal" min="0" step="0.1" style="flex:1">
+            <span style="font-size:0.78rem;color:var(--text-tertiary);font-weight:600">kg</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-ghost" id="bodyMetricsClose">Close</button>
+          <button class="modal-btn modal-btn-primary" id="bodyMetricsSave">Save Metrics</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ملف التطبيق الأساسي (الذي يحتوي على دوال التمارين والرسم) -->
 <script type="module" src="./app.js"></script>
