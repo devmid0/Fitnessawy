@@ -894,7 +894,7 @@ function finishActiveWorkout() {
   });
 
   if (!hasAnyData) {
-    alert('Log at least one set before finishing.');
+    window.ForgeDialog.alert('No Data', 'Log at least one set before finishing.');
     return;
   }
 
@@ -1149,11 +1149,13 @@ window.bootMainApp = function (user) {
     var clearDataBtn = document.getElementById('settingsClearData');
     if (clearDataBtn) {
       clearDataBtn.addEventListener('click', function () {
-        if (confirm('WARNING: This will permanently delete all your workout logs, PRs, and body metrics. Are you sure?')) {
-          try { localStorage.removeItem('fitnessawy_sessions'); } catch (ex) {}
-          try { localStorage.removeItem('fitnessawy_body_metrics'); } catch (ex) {}
-          window.location.reload();
-        }
+        window.ForgeDialog.confirm('Clear App Data', 'WARNING: This will permanently delete all your workout logs, PRs, and body metrics. Are you sure?', { danger: true, confirmLabel: 'Delete Everything' }).then(function (yes) {
+          if (yes) {
+            try { localStorage.removeItem('fitnessawy_sessions'); } catch (ex) {}
+            try { localStorage.removeItem('fitnessawy_body_metrics'); } catch (ex) {}
+            window.location.reload();
+          }
+        });
       });
     }
 
@@ -1161,22 +1163,22 @@ window.bootMainApp = function (user) {
     var changePwBtn = document.getElementById('privacyChangePassword');
     if (changePwBtn) {
       changePwBtn.addEventListener('click', async function () {
-        var newPass = prompt('Enter your new password (minimum 6 characters):');
+        var newPass = await window.ForgeDialog.prompt('Change Password', 'Enter your new password (minimum 6 characters):', { placeholder: 'New password...', confirmLabel: 'Update' });
         if (!newPass) return;
         if (newPass.length < 6) {
-          alert('Password must be at least 6 characters.');
+          await window.ForgeDialog.alert('Invalid Password', 'Password must be at least 6 characters.');
           return;
         }
         try {
           var authInstance = window.__forgeAuth.getAuth();
           await window.__forgeAuth.updatePassword(authInstance.currentUser, newPass);
-          alert('Password updated successfully!');
+          await window.ForgeDialog.alert('Success', 'Password updated successfully!');
         } catch (err) {
           console.error('[Forge] updatePassword failed:', err);
           if (err.code === 'auth/requires-recent-login') {
-            alert('For security, please log out and log back in before changing your password.');
+            await window.ForgeDialog.alert('Re-auth Required', 'For security, please log out and log back in before changing your password.');
           } else {
-            alert('Failed to update password: ' + (err.message || err));
+            await window.ForgeDialog.alert('Error', 'Failed to update password: ' + (err.message || err));
           }
         }
       });
@@ -1186,7 +1188,8 @@ window.bootMainApp = function (user) {
     var deleteAcctBtn = document.getElementById('privacyDeleteAccount');
     if (deleteAcctBtn) {
       deleteAcctBtn.addEventListener('click', async function () {
-        if (!confirm('CRITICAL: This will permanently delete your Forge account and cannot be undone. Proceed?')) return;
+        var yes = await window.ForgeDialog.confirm('Delete Account', 'CRITICAL: This will permanently delete your Forge account and cannot be undone. Proceed?', { danger: true, confirmLabel: 'Delete Account' });
+        if (!yes) return;
         try {
           var authInstance = window.__forgeAuth.getAuth();
           await window.__forgeAuth.deleteUser(authInstance.currentUser);
@@ -1196,9 +1199,9 @@ window.bootMainApp = function (user) {
         } catch (err) {
           console.error('[Forge] deleteUser failed:', err);
           if (err.code === 'auth/requires-recent-login') {
-            alert('For security, please log out and log back in before deleting your account.');
+            await window.ForgeDialog.alert('Re-auth Required', 'For security, please log out and log back in before deleting your account.');
           } else {
-            alert('Failed to delete account: ' + (err.message || err));
+            await window.ForgeDialog.alert('Error', 'Failed to delete account: ' + (err.message || err));
           }
         }
       });

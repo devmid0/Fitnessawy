@@ -40,6 +40,7 @@ async function loadFirebase() {
       updateProfile: firebaseAuth.updateProfile,
       updatePassword: firebaseAuth.updatePassword,
       deleteUser: firebaseAuth.deleteUser,
+      sendPasswordResetEmail: firebaseAuth.sendPasswordResetEmail,
       signInWithPopup: firebaseAuth.signInWithPopup,
       onAuthStateChanged: firebaseAuth.onAuthStateChanged,
       signOut: firebaseAuth.signOut,
@@ -365,24 +366,37 @@ async function onGoogleAuth() {
     console.log("✅ Google Auth Success:", result.user.email);
   } catch (error) {
     console.error("❌ GOOGLE AUTH FATAL ERROR:", error.code, error.message);
-    alert("Google Login Failed: " + error.message);
+    await window.ForgeDialog.alert('Google Login Failed', error.message);
   }
 }
 
 function onForgotPassword() {
   console.log('[Auth] Forgot password clicked.');
   const email = loginEmail.value.trim();
-  if (email && EMAIL_RE.test(email)) {
-    btnForgotPass.textContent = 'Reset link sent!';
-    btnForgotPass.classList.add('sent');
-    setTimeout(() => {
-      btnForgotPass.textContent = 'Forgot Password?';
-      btnForgotPass.classList.remove('sent');
-    }, 3000);
-  } else {
-    setError(loginEmailErr, 'Enter your email first');
-    loginEmail.focus();
+  if (!email) {
+    window.ForgeDialog.alert('Email Required', 'Please enter your email address in the field first.').then(() => {
+      loginEmail.focus();
+    });
+    return;
   }
+  if (!window.__forgeAuth || !firebaseReady || !auth) {
+    window.ForgeDialog.alert('Unavailable', 'Firebase is not available. Please try again later.');
+    return;
+  }
+  window.__forgeAuth.sendPasswordResetEmail(auth, email)
+    .then(() => {
+      window.ForgeDialog.alert('Reset Link Sent', 'A real password reset link has been sent to your email. Check your spam folder if necessary.');
+      btnForgotPass.textContent = 'Reset link sent!';
+      btnForgotPass.classList.add('sent');
+      setTimeout(() => {
+        btnForgotPass.textContent = 'Forgot Password?';
+        btnForgotPass.classList.remove('sent');
+      }, 3000);
+    })
+    .catch((err) => {
+      console.error('[Auth] sendPasswordResetEmail failed:', err);
+      window.ForgeDialog.alert('Reset Failed', err.message || 'Failed to send reset link. Please check your email and try again.');
+    });
 }
 
 /* ── Inline Validation on Blur ─────────── */

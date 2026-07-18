@@ -816,6 +816,102 @@
       </div>
     </div>
 
+    <!-- FORGE DIALOG — Custom In-App Modal System -->
+    <div id="forge-dialog-overlay">
+      <div class="forge-dialog-box">
+        <h3 class="forge-dialog-title" id="forge-dialog-title"></h3>
+        <p class="forge-dialog-message" id="forge-dialog-message"></p>
+        <input type="text" class="forge-dialog-input" id="forge-dialog-input" style="display:none" autocomplete="off">
+        <div class="forge-dialog-buttons" id="forge-dialog-buttons"></div>
+      </div>
+    </div>
+
+    <!-- ForgeDialog global utility (must load before modules) -->
+    <script>
+    window.ForgeDialog = (function () {
+      var overlay = document.getElementById('forge-dialog-overlay');
+      var titleEl = document.getElementById('forge-dialog-title');
+      var msgEl = document.getElementById('forge-dialog-message');
+      var inputEl = document.getElementById('forge-dialog-input');
+      var btnContainer = document.getElementById('forge-dialog-buttons');
+
+      function open(title, message, opts) {
+        opts = opts || {};
+        return new Promise(function (resolve) {
+          titleEl.textContent = title || '';
+          msgEl.textContent = message || '';
+          btnContainer.innerHTML = '';
+
+          if (opts.input) {
+            inputEl.style.display = 'block';
+            inputEl.value = opts.inputValue || '';
+            inputEl.placeholder = opts.placeholder || '';
+            setTimeout(function () { inputEl.focus(); }, 50);
+          } else {
+            inputEl.style.display = 'none';
+            inputEl.value = '';
+          }
+
+          var buttons = opts.buttons || [{ label: 'OK', type: 'primary', value: true }];
+          buttons.forEach(function (b) {
+            var btn = document.createElement('button');
+            btn.className = 'forge-dialog-btn forge-dialog-btn-' + (b.type || 'primary');
+            btn.textContent = b.label;
+            btn.addEventListener('click', function () {
+              overlay.classList.remove('open');
+              if (opts.input) {
+                resolve(b.value === undefined ? inputEl.value : b.value);
+              } else {
+                resolve(b.value);
+              }
+            });
+            btnContainer.appendChild(btn);
+          });
+
+          overlay.classList.add('open');
+
+          overlay.addEventListener('click', function handler(e) {
+            if (e.target === overlay) {
+              overlay.classList.remove('open');
+              overlay.removeEventListener('click', handler);
+              resolve(opts.dismissValue !== undefined ? opts.dismissValue : null);
+            }
+          });
+        });
+      }
+
+      return {
+        alert: function (title, message) {
+          return open(title, message, {
+            buttons: [{ label: 'OK', type: 'primary', value: true }]
+          });
+        },
+        confirm: function (title, message, opts) {
+          var danger = opts && opts.danger;
+          return open(title, message, {
+            buttons: [
+              { label: 'Cancel', type: 'secondary', value: false },
+              { label: (opts && opts.confirmLabel) || 'Confirm', type: danger ? 'danger' : 'primary', value: true }
+            ],
+            dismissValue: false
+          });
+        },
+        prompt: function (title, message, opts) {
+          return open(title, message, {
+            input: true,
+            placeholder: (opts && opts.placeholder) || '',
+            inputValue: (opts && opts.inputValue) || '',
+            buttons: [
+              { label: 'Cancel', type: 'secondary', value: null },
+              { label: (opts && opts.confirmLabel) || 'OK', type: 'primary', value: undefined }
+            ],
+            dismissValue: null
+          });
+        }
+      };
+    })();
+    </script>
+
     <!-- ملف التطبيق الأساسي (الذي يحتوي على دوال التمارين والرسم) -->
 <script type="module" src="./app.js"></script>
 

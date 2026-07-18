@@ -794,12 +794,11 @@ function bindImport() {
 function bindSecureWipe() {
   if (!btnDeleteAll || btnDeleteAll._bound) return;
   btnDeleteAll._bound = true;
-  btnDeleteAll.addEventListener('click', function () {
-    var input = window.prompt(
-      'PERMANENT DELETION\n\n' +
-      'This will erase ALL workout history, profile data, settings, and routines.\n' +
-      'This cannot be undone.\n\n' +
-      'Type DELETE to confirm:'
+  btnDeleteAll.addEventListener('click', async function () {
+    var input = await window.ForgeDialog.prompt(
+      'Permanent Deletion',
+      'This will erase ALL workout history, profile data, settings, and routines. This cannot be undone.\n\nType DELETE to confirm:',
+      { placeholder: 'Type DELETE', confirmLabel: 'Wipe Everything' }
     );
 
     if (input !== 'DELETE') {
