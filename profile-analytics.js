@@ -8,6 +8,9 @@
   'use strict';
 
   var HISTORY_KEY = 'workoutHistory';
+  var PROFILE_KEY = 'forge_profile';
+  var SETTINGS_KEY = 'forge_settings';
+  var ACCENT_KEY = 'forge_accent';
   var RECENT_LIMIT = 5;
 
   /* ── Muscle Group Map ──────────────────── */
@@ -38,16 +41,53 @@
   var analyticsGrid, emptyState, recentSection, recentLogs, logCount;
   var btnProfileStart;
   var trophyRoom, trophyGrid;
+  var profileMain, profileEdit, profileSettings, profilePrivacy;
+  var profileNameDisplay, profileAvatarText, profileSubDisplay;
+  var inputDisplayName, inputBodyweight, inputTargetWeight;
+  var inputPrimaryGoal, inputExperienceLevel;
+  var btnSaveProfile, profileSaveStatus;
+  var toggleWeightUnit, toggleUnitLabel;
+  var toggleTimerAlerts, toggleWakeLock;
+  var accentColorSelector;
+  var btnDownloadBackup, btnImportBackup, importBackupFile, btnDeleteAll;
 
   function cacheDom() {
-    analyticsGrid = document.getElementById('profileAnalytics');
-    emptyState    = document.getElementById('profileEmpty');
-    recentSection = document.getElementById('profileRecentSection');
-    recentLogs    = document.getElementById('profileRecentLogs');
-    logCount      = document.getElementById('profileLogCount');
+    analyticsGrid   = document.getElementById('profileAnalytics');
+    emptyState      = document.getElementById('profileEmpty');
+    recentSection   = document.getElementById('profileRecentSection');
+    recentLogs      = document.getElementById('profileRecentLogs');
+    logCount        = document.getElementById('profileLogCount');
     btnProfileStart = document.getElementById('btnProfileStart');
-    trophyRoom    = document.getElementById('trophyRoom');
-    trophyGrid    = document.getElementById('trophyGrid');
+    trophyRoom      = document.getElementById('trophyRoom');
+    trophyGrid      = document.getElementById('trophyGrid');
+
+    profileMain     = document.getElementById('profileMain');
+    profileEdit     = document.getElementById('profileEdit');
+    profileSettings = document.getElementById('profileSettings');
+    profilePrivacy  = document.getElementById('profilePrivacy');
+
+    profileNameDisplay  = document.getElementById('profileNameDisplay');
+    profileAvatarText   = document.getElementById('profileAvatarText');
+    profileSubDisplay   = document.getElementById('profileSubDisplay');
+
+    inputDisplayName    = document.getElementById('inputDisplayName');
+    inputBodyweight     = document.getElementById('inputBodyweight');
+    inputTargetWeight   = document.getElementById('inputTargetWeight');
+    inputPrimaryGoal    = document.getElementById('inputPrimaryGoal');
+    inputExperienceLevel = document.getElementById('inputExperienceLevel');
+    btnSaveProfile      = document.getElementById('btnSaveProfile');
+    profileSaveStatus   = document.getElementById('profileSaveStatus');
+
+    toggleWeightUnit = document.getElementById('toggleWeightUnit');
+    toggleUnitLabel  = document.getElementById('toggleUnitLabel');
+    toggleTimerAlerts = document.getElementById('toggleTimerAlerts');
+    toggleWakeLock   = document.getElementById('toggleWakeLock');
+    accentColorSelector = document.getElementById('accentColorSelector');
+
+    btnDownloadBackup = document.getElementById('btnDownloadBackup');
+    btnImportBackup   = document.getElementById('btnImportBackup');
+    importBackupFile  = document.getElementById('importBackupFile');
+    btnDeleteAll      = document.getElementById('btnDeleteAll');
   }
 
   /* ── History Reader ────────────────────── */
@@ -315,11 +355,513 @@
     });
   }
 
+  /* ── Sub-View Routing ──────────────────── */
+
+  var subViews = {
+    'edit-profile': { el: null, bound: false },
+    'settings':     { el: null, bound: false },
+    'privacy':      { el: null, bound: false }
+  };
+
+  function showSubview(name) {
+    var sv = subViews[name];
+    if (!sv || !sv.el) return;
+    profileMain.style.display = 'none';
+    sv.el.style.display = '';
+  }
+
+  function hideAllSubviews() {
+    Object.keys(subViews).forEach(function (k) {
+      subViews[k].el.style.display = 'none';
+    });
+    profileMain.style.display = '';
+    /* re-render hero in case profile was edited */
+    applyProfileToHero();
+  }
+
+  function bindSubViewRouting() {
+    /* menu buttons → open sub-view */
+    document.querySelectorAll('.menu-row[data-action]').forEach(function (btn) {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', function () {
+        showSubview(this.dataset.action);
+      });
+    });
+
+    /* back buttons → close sub-view */
+    document.querySelectorAll('.btn-back[data-back]').forEach(function (btn) {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', function () {
+        hideAllSubviews();
+      });
+    });
+  }
+
+  /* ── Profile Storage ───────────────────── */
+
+  function readProfile() {
+    try {
+      var raw = localStorage.getItem(PROFILE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  function writeProfile(data) {
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  function applyProfileToHero() {
+    var p = readProfile();
+    var name = p.displayName || 'Mido A.';
+    var bw   = p.bodyweight;
+
+    if (profileNameDisplay) profileNameDisplay.textContent = name;
+    if (profileAvatarText) {
+      var parts = name.trim().split(/\s+/);
+      var initials = (parts[0] || 'M').charAt(0).toUpperCase();
+      if (parts.length > 1) initials += parts[parts.length - 1].charAt(0).toUpperCase();
+      profileAvatarText.textContent = initials;
+    }
+    if (profileSubDisplay) {
+      var labels = [];
+      if (bw) labels.push(bw + ' kg');
+      if (p.primaryGoal) {
+        var goalMap = { hypertrophy: 'Hypertrophy', strength: 'Strength', fat_loss: 'Fat Loss', maintenance: 'Maintenance' };
+        labels.push(goalMap[p.primaryGoal] || p.primaryGoal);
+      }
+      if (p.experienceLevel) {
+        var lvlMap = { beginner: 'Beginner', intermediate: 'Intermediate', advanced: 'Advanced', elite: 'Elite' };
+        labels.push(lvlMap[p.experienceLevel] || p.experienceLevel);
+      }
+      if (labels.length === 0) labels.push('Pro Member · Since Jan 2026');
+      profileSubDisplay.textContent = labels.join(' · ');
+    }
+  }
+
+  /* ── Edit Profile Logic ────────────────── */
+
+  function loadProfileForm() {
+    var p = readProfile();
+    if (inputDisplayName)    inputDisplayName.value    = p.displayName || '';
+    if (inputBodyweight)     inputBodyweight.value     = p.bodyweight || '';
+    if (inputTargetWeight)   inputTargetWeight.value   = p.targetWeight || '';
+    if (inputPrimaryGoal)    inputPrimaryGoal.value    = p.primaryGoal || '';
+    if (inputExperienceLevel) inputExperienceLevel.value = p.experienceLevel || '';
+  }
+
+  function bindEditProfile() {
+    if (!btnSaveProfile || btnSaveProfile._bound) return;
+    btnSaveProfile._bound = true;
+    btnSaveProfile.addEventListener('click', function () {
+      var name = (inputDisplayName.value || '').trim();
+      if (!name) {
+        inputDisplayName.focus();
+        return;
+      }
+
+      var bw  = parseFloat(inputBodyweight.value) || 0;
+      var tw  = parseFloat(inputTargetWeight.value) || 0;
+      var goal = inputPrimaryGoal ? inputPrimaryGoal.value : '';
+      var lvl  = inputExperienceLevel ? inputExperienceLevel.value : '';
+
+      var p = readProfile();
+      p.displayName = name;
+      if (bw > 0) p.bodyweight = bw;
+      else delete p.bodyweight;
+      if (tw > 0) p.targetWeight = tw;
+      else delete p.targetWeight;
+      if (goal) p.primaryGoal = goal;
+      else delete p.primaryGoal;
+      if (lvl) p.experienceLevel = lvl;
+      else delete p.experienceLevel;
+      writeProfile(p);
+
+      if (profileSaveStatus) {
+        profileSaveStatus.className = 'form-status lime';
+        profileSaveStatus.textContent = 'Profile Data Synced';
+        setTimeout(function () {
+          profileSaveStatus.className = 'form-status';
+          profileSaveStatus.textContent = '';
+        }, 3000);
+      }
+
+      showToast('Profile Data Synced', 'lime');
+      hideAllSubviews();
+    });
+  }
+
+  /* ── Settings Logic ────────────────────── */
+
+  function readSettings() {
+    try {
+      var raw = localStorage.getItem(SETTINGS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+
+  function writeSettings(data) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  /* ── Feature 1: Weight Unit ────────────── */
+
+  function applyWeightUnitUI() {
+    var s = readSettings();
+    var isLbs = s.weightUnit === 'lbs';
+    if (toggleWeightUnit) toggleWeightUnit.setAttribute('aria-checked', isLbs ? 'true' : 'false');
+    if (toggleUnitLabel) {
+      toggleUnitLabel.textContent = isLbs ? 'LBS' : 'KG';
+      toggleUnitLabel.classList.toggle('active', isLbs);
+    }
+  }
+
+  function bindWeightUnit() {
+    if (!toggleWeightUnit || toggleWeightUnit._bound) return;
+    toggleWeightUnit._bound = true;
+    toggleWeightUnit.addEventListener('click', function () {
+      var s = readSettings();
+      var isLbs = s.weightUnit === 'lbs';
+      s.weightUnit = isLbs ? 'kg' : 'lbs';
+      writeSettings(s);
+      applyWeightUnitUI();
+      showToast(s.weightUnit === 'lbs' ? 'Switched to LBS' : 'Switched to KG');
+    });
+  }
+
+  /* ── Feature 2: Timer Alerts ───────────── */
+
+  function applyTimerAlertsUI() {
+    var s = readSettings();
+    var on = s.timerAlerts === true;
+    if (toggleTimerAlerts) toggleTimerAlerts.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  function bindTimerAlerts() {
+    if (!toggleTimerAlerts || toggleTimerAlerts._bound) return;
+    toggleTimerAlerts._bound = true;
+    toggleTimerAlerts.addEventListener('click', function () {
+      var s = readSettings();
+      s.timerAlerts = !s.timerAlerts;
+      writeSettings(s);
+      applyTimerAlertsUI();
+      if (s.timerAlerts) playTimerAlert();
+      showToast(s.timerAlerts ? 'Timer Alerts Enabled' : 'Timer Alerts Disabled');
+    });
+  }
+
+  function playTimerAlert() {
+    var s = readSettings();
+    if (s.timerAlerts !== true) return;
+
+    /* haptic vibration */
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+
+    /* audio beep via Web Audio API */
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch (e) {}
+  }
+
+  /* ── Feature 3: Keep Screen Awake ──────── */
+
+  var wakeLock = null;
+
+  function applyWakeLockUI() {
+    var s = readSettings();
+    var on = s.keepAwake === true;
+    if (toggleWakeLock) toggleWakeLock.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  async function requestWakeLock() {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', function () { wakeLock = null; });
+    } catch (e) { wakeLock = null; }
+  }
+
+  function releaseWakeLock() {
+    if (wakeLock) {
+      wakeLock.release();
+      wakeLock = null;
+    }
+  }
+
+  function bindWakeLock() {
+    if (!toggleWakeLock || toggleWakeLock._bound) return;
+    toggleWakeLock._bound = true;
+    toggleWakeLock.addEventListener('click', async function () {
+      var s = readSettings();
+      s.keepAwake = !s.keepAwake;
+      writeSettings(s);
+
+      if (s.keepAwake) {
+        await requestWakeLock();
+        showToast('Screen will stay awake');
+      } else {
+        releaseWakeLock();
+        showToast('Screen sleep restored');
+      }
+      applyWakeLockUI();
+    });
+
+    /* re-acquire lock when user returns to tab */
+    document.addEventListener('visibilitychange', async function () {
+      var s = readSettings();
+      if (s.keepAwake === true && document.visibilityState === 'visible' && !wakeLock) {
+        await requestWakeLock();
+      }
+    });
+  }
+
+  function restoreWakeLock() {
+    var s = readSettings();
+    if (s.keepAwake === true && 'wakeLock' in navigator) {
+      requestWakeLock();
+    }
+  }
+
+  /* ── Feature 4: Accent Color ───────────── */
+
+  function applyAccentColor(hex) {
+    if (!hex) return;
+    var r = document.documentElement;
+    r.style.setProperty('--accent-cyan', hex);
+    r.style.setProperty('--accent-cyan-dim', hexToRgba(hex, 0.12));
+    r.style.setProperty('--accent-cyan-glow', hexToRgba(hex, 0.25));
+  }
+
+  function applySavedAccent() {
+    try {
+      var saved = localStorage.getItem(ACCENT_KEY);
+      if (saved) applyAccentColor(saved);
+    } catch (e) {}
+  }
+
+  function highlightActiveSwatch() {
+    if (!accentColorSelector) return;
+    var current = '';
+    try { current = localStorage.getItem(ACCENT_KEY) || ''; } catch (e) {}
+
+    accentColorSelector.querySelectorAll('.color-swatch').forEach(function (sw) {
+      sw.classList.toggle('active', sw.dataset.color.toUpperCase() === current.toUpperCase());
+    });
+  }
+
+  function bindAccentColor() {
+    if (!accentColorSelector || accentColorSelector._bound) return;
+    accentColorSelector._bound = true;
+    accentColorSelector.addEventListener('click', function (e) {
+      var sw = e.target.closest('.color-swatch');
+      if (!sw) return;
+      var hex = sw.dataset.color;
+      try { localStorage.setItem(ACCENT_KEY, hex); } catch (e) {}
+      applyAccentColor(hex);
+      highlightActiveSwatch();
+      showToast('Accent: ' + (sw.dataset.name || 'Custom'));
+    });
+  }
+
+  function hexToRgba(hex, alpha) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var r = parseInt(h.substring(0, 2), 16);
+    var g = parseInt(h.substring(2, 4), 16);
+    var b = parseInt(h.substring(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+  }
+
+  /* ── Settings Refresh ──────────────────── */
+
+  function refreshSettingsUI() {
+    applyWeightUnitUI();
+    applyTimerAlertsUI();
+    applyWakeLockUI();
+    highlightActiveSwatch();
+  }
+
+  function bindSettings() {
+    bindWeightUnit();
+    bindTimerAlerts();
+    bindWakeLock();
+    bindAccentColor();
+  }
+
+  /* ── Privacy Logic ─────────────────────── */
+
+  function bindPrivacy() {
+    bindExport();
+    bindImport();
+    bindSecureWipe();
+  }
+
+  /* ── Export: Blob + programmatic download ── */
+
+  function bindExport() {
+    if (!btnDownloadBackup || btnDownloadBackup._bound) return;
+    btnDownloadBackup._bound = true;
+    btnDownloadBackup.addEventListener('click', function () {
+      var data = {};
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          data[key] = localStorage.getItem(key);
+        }
+      } catch (e) {
+        showToast('Export failed', 'danger');
+        return;
+      }
+
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json' });
+      var url  = URL.createObjectURL(blob);
+
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'forge-fitness-backup.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+      showToast('Backup downloaded', 'lime');
+    });
+  }
+
+  /* ── Import: FileReader + localStorage restore ── */
+
+  function bindImport() {
+    if (!btnImportBackup || btnImportBackup._bound) return;
+    btnImportBackup._bound = true;
+
+    btnImportBackup.addEventListener('click', function () {
+      if (importBackupFile) importBackupFile.click();
+    });
+
+    if (!importBackupFile || importBackupFile._bound) return;
+    importBackupFile._bound = true;
+
+    importBackupFile.addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var parsed;
+        try {
+          parsed = JSON.parse(e.target.result);
+        } catch (err) {
+          showToast('Invalid backup file', 'danger');
+          return;
+        }
+
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          showToast('Invalid backup format', 'danger');
+          return;
+        }
+
+        try {
+          Object.keys(parsed).forEach(function (key) {
+            localStorage.setItem(key, parsed[key]);
+          });
+        } catch (err) {
+          showToast('Import failed: storage full', 'danger');
+          return;
+        }
+
+        showToast('Backup Restored Successfully', 'lime');
+        setTimeout(function () { location.reload(); }, 800);
+      };
+
+      reader.onerror = function () {
+        showToast('Failed to read file', 'danger');
+      };
+
+      reader.readAsText(file);
+      importBackupFile.value = '';
+    });
+  }
+
+  /* ── Secure Wipe: strict "DELETE" prompt ── */
+
+  function bindSecureWipe() {
+    if (!btnDeleteAll || btnDeleteAll._bound) return;
+    btnDeleteAll._bound = true;
+    btnDeleteAll.addEventListener('click', function () {
+      var input = window.prompt(
+        'PERMANENT DELETION\n\n' +
+        'This will erase ALL workout history, profile data, settings, and routines.\n' +
+        'This cannot be undone.\n\n' +
+        'Type DELETE to confirm:'
+      );
+
+      if (input !== 'DELETE') {
+        if (input !== null) showToast('Deletion cancelled', 'danger');
+        return;
+      }
+
+      try { localStorage.clear(); } catch (e) {}
+
+      showToast('System Wiped', 'danger', 1200);
+      setTimeout(function () { location.reload(); }, 1000);
+    });
+  }
+
+  /* ── Toast Utility ─────────────────────── */
+
+  function showToast(msg, type, duration) {
+    var existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    var t = document.createElement('div');
+    t.className = 'toast';
+    if (type === 'danger') t.className += ' danger';
+    else if (type === 'lime') t.className += ' lime';
+    t.textContent = msg;
+    document.body.appendChild(t);
+
+    var ms = duration || 1800;
+    setTimeout(function () {
+      t.classList.add('out');
+      setTimeout(function () { t.remove(); }, 300);
+    }, ms);
+  }
+
   /* ── Main Refresh ──────────────────────── */
 
   function refresh() {
     cacheDom();
     var history = readHistory();
+
+    /* init sub-view refs (once) */
+    if (!subViews['edit-profile'].el) {
+      subViews['edit-profile'].el = profileEdit;
+      subViews['settings'].el     = profileSettings;
+      subViews['privacy'].el      = profilePrivacy;
+    }
+
+    /* ensure main profile is visible (not stuck in a sub-view) */
+    if (profileMain) profileMain.style.display = '';
+    Object.keys(subViews).forEach(function (k) {
+      if (subViews[k].el) subViews[k].el.style.display = 'none';
+    });
+
+    applyProfileToHero();
+    loadProfileForm();
+    refreshSettingsUI();
 
     if (history.length === 0) {
       analyticsGrid.innerHTML = '';
@@ -335,6 +877,10 @@
     renderTrophyRoom(history);
     renderWeeklyChart(history);
     bindEmptyButton();
+    bindSubViewRouting();
+    bindEditProfile();
+    bindSettings();
+    bindPrivacy();
   }
 
   function bindEmptyButton() {
@@ -409,18 +955,33 @@
 
   /* ── Public API ────────────────────────── */
 
-  window.ForgeProfile = { refresh: refresh };
+  window.ForgeProfile = {
+    refresh: refresh,
+    getWeightUnit: function () {
+      var s = readSettings();
+      return s.weightUnit || 'kg';
+    },
+    getAppUnit: function () {
+      var s = readSettings();
+      return s.weightUnit || 'kg';
+    },
+    playTimerAlert: playTimerAlert
+  };
 
   /* ── Boot (defer until DOM ready) ──────── */
+
+  applySavedAccent();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       cacheDom();
       refresh();
+      restoreWakeLock();
     });
   } else {
     cacheDom();
     refresh();
+    restoreWakeLock();
   }
 
 })();

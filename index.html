@@ -273,83 +273,267 @@
       <section id="view-profile" class="view">
         <div class="view-scroll">
 
-          <div class="profile-hero">
-            <div class="avatar">
-              <span class="avatar-text">MA</span>
-              <div class="avatar-ring"></div>
-            </div>
-            <h2 class="profile-name">Mido A.</h2>
-            <p class="profile-sub">Pro Member · Since Jan 2026</p>
-          </div>
+          <!-- ── Main Profile Content ──────────── -->
+          <div id="profileMain">
 
-          <!-- Analytics Cards (dynamic) -->
-          <div id="profileAnalytics" class="profile-analytics-grid"></div>
-
-          <!-- Trophy Room — Personal Records (dynamic) -->
-          <div id="trophyRoom" class="trophy-room" style="display:none">
-            <div class="section-header">
-              <h2 class="section-title" style="font-size:1rem">
-                <span style="color:var(--accent-gold)">&#9733;</span> Trophy Room
-              </h2>
-              <span class="section-badge trophy-section-badge">PRs</span>
-            </div>
-            <div id="trophyGrid" class="trophy-grid"></div>
-          </div>
-
-          <!-- Empty State (dynamic) -->
-          <div id="profileEmpty" class="profile-empty" style="display:none">
-            <div class="profile-empty-icon">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M8 4v4M16 4v4M8 16v4M16 16v4"/></svg>
-            </div>
-            <h3 class="profile-empty-title">No Workouts Yet</h3>
-            <p class="profile-empty-desc">Complete your first workout and your analytics will appear here.</p>
-            <button class="btn-primary" id="btnProfileStart">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Start First Workout
-            </button>
-          </div>
-
-          <!-- Recent Logs Section (dynamic) -->
-          <div id="profileRecentSection" class="profile-recent-section" style="display:none">
-            <div class="section-header">
-              <h2 class="section-title" style="font-size:1rem">Recent Sessions</h2>
-              <span id="profileLogCount" class="section-badge accent-cyan">0</span>
-            </div>
-            <div id="profileRecentLogs" class="profile-log-list"></div>
-          </div>
-
-          <div class="profile-menu">
-            <button class="menu-row">
-              <div class="menu-left">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span>Edit Profile</span>
+            <div class="profile-hero">
+              <div class="avatar">
+                <span id="profileAvatarText" class="avatar-text">MA</span>
+                <div class="avatar-ring"></div>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button class="menu-row">
-              <div class="menu-left">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                <span>Settings</span>
+              <h2 id="profileNameDisplay" class="profile-name">Mido A.</h2>
+              <p id="profileSubDisplay" class="profile-sub">Pro Member · Since Jan 2026</p>
+            </div>
+
+            <!-- Analytics Cards (dynamic) -->
+            <div id="profileAnalytics" class="profile-analytics-grid"></div>
+
+            <!-- Trophy Room — Personal Records (dynamic) -->
+            <div id="trophyRoom" class="trophy-room" style="display:none">
+              <div class="section-header">
+                <h2 class="section-title" style="font-size:1rem">
+                  <span style="color:var(--accent-gold)">&#9733;</span> Trophy Room
+                </h2>
+                <span class="section-badge trophy-section-badge">PRs</span>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button class="menu-row">
-              <div class="menu-left">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                <span>Training Program</span>
+              <div id="trophyGrid" class="trophy-grid"></div>
+            </div>
+
+            <!-- Empty State (dynamic) -->
+            <div id="profileEmpty" class="profile-empty" style="display:none">
+              <div class="profile-empty-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M8 4v4M16 4v4M8 16v4M16 16v4"/></svg>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button class="menu-row">
-              <div class="menu-left">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>Privacy & Security</span>
+              <h3 class="profile-empty-title">No Workouts Yet</h3>
+              <p class="profile-empty-desc">Complete your first workout and your analytics will appear here.</p>
+              <button class="btn-primary" id="btnProfileStart">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Start First Workout
+              </button>
+            </div>
+
+            <!-- Recent Logs Section (dynamic) -->
+            <div id="profileRecentSection" class="profile-recent-section" style="display:none">
+              <div class="section-header">
+                <h2 class="section-title" style="font-size:1rem">Recent Sessions</h2>
+                <span id="profileLogCount" class="section-badge accent-cyan">0</span>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              <div id="profileRecentLogs" class="profile-log-list"></div>
+            </div>
+
+            <div class="profile-menu">
+              <button class="menu-row" data-action="edit-profile">
+                <div class="menu-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span>Edit Profile</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button class="menu-row" data-action="settings">
+                <div class="menu-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Settings</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button class="menu-row" data-action="privacy">
+                <div class="menu-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>Privacy &amp; Security</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+
+            <button class="btn-ghost btn-full">Log Out</button>
+
+          </div><!-- /profileMain -->
+
+          <!-- ── Sub-View: Edit Profile ────────── -->
+          <div id="profileEdit" class="profile-subview" style="display:none">
+            <div class="profile-subview-header">
+              <button class="btn-back" data-back="edit-profile">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+              </button>
+              <h2 class="profile-subview-title">Edit Profile</h2>
+              <div style="width:60px"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Display Name</label>
+              <input type="text" id="inputDisplayName" class="form-input" placeholder="Your name" maxlength="30" autocomplete="off">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group form-col">
+                <label class="form-label">Current Bodyweight</label>
+                <div class="form-input-wrap">
+                  <input type="number" id="inputBodyweight" class="form-input form-input-unit" placeholder="0" min="20" max="300" step="0.1">
+                  <span class="form-unit">kg</span>
+                </div>
+              </div>
+              <div class="form-group form-col">
+                <label class="form-label">Target Bodyweight</label>
+                <div class="form-input-wrap">
+                  <input type="number" id="inputTargetWeight" class="form-input form-input-unit" placeholder="0" min="20" max="300" step="0.1">
+                  <span class="form-unit">kg</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Primary Goal</label>
+              <div class="form-select-wrap">
+                <select id="inputPrimaryGoal" class="form-select">
+                  <option value="">Select a goal</option>
+                  <option value="hypertrophy">Hypertrophy</option>
+                  <option value="strength">Raw Strength</option>
+                  <option value="fat_loss">Fat Loss</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+                <svg class="form-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Experience Level</label>
+              <div class="form-select-wrap">
+                <select id="inputExperienceLevel" class="form-select">
+                  <option value="">Select level</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="elite">Elite</option>
+                </select>
+                <svg class="form-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <button class="btn-primary btn-full" id="btnSaveProfile" style="margin-top:var(--space-lg)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Save Changes
             </button>
+            <div id="profileSaveStatus" class="form-status"></div>
           </div>
 
-          <button class="btn-ghost btn-full">Log Out</button>
+          <!-- ── Sub-View: Settings ────────────── -->
+          <div id="profileSettings" class="profile-subview" style="display:none">
+            <div class="profile-subview-header">
+              <button class="btn-back" data-back="settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+              </button>
+              <h2 class="profile-subview-title">Settings</h2>
+              <div style="width:60px"></div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-row">
+                <div class="settings-info">
+                  <span class="settings-label">Weight Unit</span>
+                  <span class="settings-desc">Choose how weights are displayed</span>
+                </div>
+                <div class="toggle-row">
+                  <span id="toggleUnitLabel" class="toggle-label active">KG</span>
+                  <button id="toggleWeightUnit" class="toggle-switch" role="switch" aria-checked="false">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-row">
+                <div class="settings-info">
+                  <span class="settings-label">Rest Timer Alerts</span>
+                  <span class="settings-desc">Sound &amp; haptic vibration when timer ends</span>
+                </div>
+                <div class="toggle-row">
+                  <button id="toggleTimerAlerts" class="toggle-switch" role="switch" aria-checked="false">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-row">
+                <div class="settings-info">
+                  <span class="settings-label">Keep Screen Awake</span>
+                  <span class="settings-desc">Prevent screen from sleeping during workouts</span>
+                </div>
+                <div class="toggle-row">
+                  <button id="toggleWakeLock" class="toggle-switch" role="switch" aria-checked="false">
+                    <span class="toggle-knob"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-row settings-row-col">
+                <div class="settings-info">
+                  <span class="settings-label">Accent Color</span>
+                  <span class="settings-desc">Choose your primary neon accent</span>
+                </div>
+                <div class="color-selector" id="accentColorSelector">
+                  <button class="color-swatch" data-color="#00FFCC" data-name="Cyan" style="--swatch:#00FFCC" title="Cyber Cyan">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <button class="color-swatch" data-color="#39FF14" data-name="Lime" style="--swatch:#39FF14" title="Electric Lime">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <button class="color-swatch" data-color="#FF4444" data-name="Red" style="--swatch:#FF4444" title="Crimson Red">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Sub-View: Privacy & Security ──── -->
+          <div id="profilePrivacy" class="profile-subview" style="display:none">
+            <div class="profile-subview-header">
+              <button class="btn-back" data-back="privacy">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+              </button>
+              <h2 class="profile-subview-title">Privacy &amp; Security</h2>
+              <div style="width:60px"></div>
+            </div>
+
+            <div class="settings-group">
+              <div class="settings-row">
+                <div class="settings-info">
+                  <span class="settings-label">Export Data</span>
+                  <span class="settings-desc">Download all your workout data as a JSON file</span>
+                </div>
+              </div>
+              <button class="btn-ghost btn-full" id="btnDownloadBackup">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Backup (JSON)
+              </button>
+              <button class="btn-ghost btn-full" id="btnImportBackup" style="margin-top:var(--space-sm)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import Backup (JSON)
+              </button>
+              <input type="file" id="importBackupFile" accept=".json" style="display:none">
+            </div>
+
+            <div class="settings-group" style="margin-top:var(--space-xl)">
+              <div class="settings-row">
+                <div class="settings-info">
+                  <span class="settings-label" style="color:var(--danger)">Danger Zone</span>
+                  <span class="settings-desc">Permanently erase all data from this device</span>
+                </div>
+              </div>
+              <button class="btn-danger btn-full" id="btnDeleteAll">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete All Data
+              </button>
+            </div>
+          </div>
 
         </div>
       </section>
