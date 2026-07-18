@@ -24,6 +24,10 @@
   --accent-cyan-glow: rgba(0, 255, 204, 0.25);
   --accent-lime-glow: rgba(57, 255, 20, 0.25);
 
+  --accent-gold: #FFD700;
+  --accent-gold-dim: rgba(255, 215, 0, 0.10);
+  --accent-gold-glow: rgba(255, 215, 0, 0.30);
+
   --danger: #FF4444;
   --danger-dim: rgba(255, 68, 68, 0.12);
 
@@ -1859,6 +1863,163 @@ a {
 }
 
 /* ============================================
+   PROFILE — TROPHY ROOM (Personal Records)
+   ============================================ */
+
+.trophy-room {
+  margin-bottom: var(--space-md);
+}
+
+.trophy-section-badge {
+  background: var(--accent-gold-dim);
+  color: var(--accent-gold);
+}
+
+.trophy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.trophy-badge {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--duration-fast) ease,
+              box-shadow var(--duration-normal) ease;
+}
+
+.trophy-badge:hover {
+  border-color: rgba(255, 215, 0, 0.25);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.06);
+}
+
+.trophy-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-normal) ease;
+}
+
+.trophy-badge:hover::before {
+  opacity: 1;
+}
+
+.trophy-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--accent-gold);
+}
+
+.trophy-rank-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gold-dim);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.trophy-exercise {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trophy-weight {
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-gold);
+  text-shadow: 0 0 12px var(--accent-gold-glow);
+  animation: goldPulse 3s ease-in-out infinite;
+}
+
+.trophy-weight-unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+.trophy-date {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+}
+
+/* ── Trophy Empty State ──────────────────── */
+
+.trophy-empty {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+}
+
+.trophy-empty-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-gold-dim);
+  color: var(--accent-gold);
+  opacity: 0.5;
+}
+
+.trophy-empty-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.trophy-empty-desc {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  max-width: 220px;
+}
+
+/* ── Gold Pulse Animation ────────────────── */
+
+@keyframes goldPulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.15); }
+  50%      { text-shadow: 0 0 18px rgba(255, 215, 0, 0.35); }
+}
+
+/* ============================================
    WORKOUT LOG — EMPTY STATE
    ============================================ */
 
@@ -2595,6 +2756,12 @@ a {
 
 .view.active .profile-hero { animation-delay: 0ms; }
 .view.active .profile-menu { animation-delay: 80ms; }
+
+.view.active .trophy-badge { animation: fadeInUp 0.4s var(--ease-out) both; }
+.view.active .trophy-badge:nth-child(1) { animation-delay: 0ms; }
+.view.active .trophy-badge:nth-child(2) { animation-delay: 60ms; }
+.view.active .trophy-badge:nth-child(3) { animation-delay: 120ms; }
+.view.active .trophy-badge:nth-child(4) { animation-delay: 180ms; }
 
 /* ============================================
    RESPONSIVE — TABLET & UP

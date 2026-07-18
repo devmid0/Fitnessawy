@@ -37,6 +37,7 @@
 
   var analyticsGrid, emptyState, recentSection, recentLogs, logCount;
   var btnProfileStart;
+  var trophyRoom, trophyGrid;
 
   function cacheDom() {
     analyticsGrid = document.getElementById('profileAnalytics');
@@ -45,6 +46,8 @@
     recentLogs    = document.getElementById('profileRecentLogs');
     logCount      = document.getElementById('profileLogCount');
     btnProfileStart = document.getElementById('btnProfileStart');
+    trophyRoom    = document.getElementById('trophyRoom');
+    trophyGrid    = document.getElementById('trophyGrid');
   }
 
   /* ── History Reader ────────────────────── */
@@ -110,6 +113,79 @@
       totalVolume: totalVolume,
       totalSessions: history.length
     };
+  }
+
+  /* ── Compute Personal Records ──────────── */
+
+  function computePRs(history) {
+    var prMap = {};
+
+    history.forEach(function (session) {
+      if (!session.exercises) return;
+      var sessionDate = session.date || '';
+
+      session.exercises.forEach(function (ex) {
+        if (!ex.sets) return;
+
+        ex.sets.forEach(function (set) {
+          var w = parseFloat(set.weight) || 0;
+          if (w <= 0) return;
+
+          if (!prMap[ex.name] || w > prMap[ex.name].weight) {
+            prMap[ex.name] = { weight: w, date: sessionDate, reps: set.reps || 0 };
+          }
+        });
+      });
+    });
+
+    var prs = [];
+    Object.keys(prMap).forEach(function (name) {
+      prs.push({
+        name: name,
+        weight: prMap[name].weight,
+        date: prMap[name].date,
+        reps: prMap[name].reps
+      });
+    });
+
+    prs.sort(function (a, b) { return b.weight - a.weight; });
+    return prs.slice(0, 4);
+  }
+
+  /* ── Render Trophy Room ────────────────── */
+
+  function renderTrophyRoom(history) {
+    if (!trophyRoom || !trophyGrid) return;
+
+    var prs = computePRs(history);
+
+    if (prs.length === 0) {
+      trophyRoom.style.display = '';
+      trophyGrid.innerHTML =
+        '<div class="trophy-empty" style="grid-column:1/-1">' +
+          '<div class="trophy-empty-icon">' +
+            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>' +
+          '</div>' +
+          '<div class="trophy-empty-title">No PRs Yet</div>' +
+          '<div class="trophy-empty-desc">Log weights during your workouts to start tracking personal records.</div>' +
+        '</div>';
+      return;
+    }
+
+    trophyRoom.style.display = '';
+
+    var html = '';
+    prs.forEach(function (pr, i) {
+      var rankLabel = (i + 1) + '';
+      html += '<div class="trophy-badge">';
+      html += '<div class="trophy-rank"><span class="trophy-rank-num">' + rankLabel + '</span> PR</div>';
+      html += '<div class="trophy-exercise">' + esc(pr.name) + '</div>';
+      html += '<div><span class="trophy-weight">' + pr.weight + '</span><span class="trophy-weight-unit">kg</span></div>';
+      html += '<div class="trophy-date">' + fmtDate(pr.date) + '</div>';
+      html += '</div>';
+    });
+
+    trophyGrid.innerHTML = html;
   }
 
   /* ── Render Analytics Cards ────────────── */
@@ -256,6 +332,7 @@
       renderRecentLogs(history);
     }
 
+    renderTrophyRoom(history);
     renderWeeklyChart(history);
     bindEmptyButton();
   }
