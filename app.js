@@ -129,6 +129,27 @@ function init() {
   try { switchView(currentView); } catch (e) { console.warn('[Fitnessawy] switchView failed:', e); }
   try { updateDashboardStats(); } catch (e) { console.warn('[Fitnessawy] init updateDashboardStats failed:', e); }
   try { requestAnimationFrame(animateStatBars); } catch (e) { console.warn('[Fitnessawy] animateStatBars failed:', e); }
+
+  /* ── Exercise Lightbox — global delegation ── */
+  try {
+    var lbOverlay = document.getElementById('exercise-lightbox-overlay');
+    var lbImg = document.getElementById('exercise-lightbox-img');
+    if (lbOverlay && lbImg) {
+      document.body.addEventListener('click', function (e) {
+        var tag = e.target.tagName;
+        if (tag === 'IMG' && (e.target.classList.contains('ex-card-thumb') || e.target.classList.contains('log-ex-thumb'))) {
+          lbImg.src = e.target.src;
+          lbOverlay.classList.add('open');
+        }
+      });
+      lbOverlay.addEventListener('click', function (e) {
+        if (e.target === lbOverlay) {
+          lbOverlay.classList.remove('open');
+          lbImg.src = '';
+        }
+      });
+    }
+  } catch (e) { console.warn('[Fitnessawy] Lightbox init failed:', e); }
 }
 
 /* ── Expose globally for cross-module refs ── */

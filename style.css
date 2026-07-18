@@ -3917,3 +3917,37 @@ a {
 .forge-dialog-btn-danger:hover {
   background: #333;
 }
+
+/* ============================================
+   EXERCISE LIGHTBOX — GLOBAL IMAGE ZOOM
+   ============================================ */
+
+#exercise-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 16px;
+  cursor: pointer;
+}
+
+#exercise-lightbox-overlay.open {
+  display: flex;
+}
+
+#exercise-lightbox-overlay img {
+  max-width: min(85vw, 400px);
+  max-height: 85vh;
+  border-radius: 12px;
+  object-fit: contain;
+  pointer-events: none;
+  animation: lightboxIn 0.2s ease both;
+}
+
+@keyframes lightboxIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
