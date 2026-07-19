@@ -918,5 +918,18 @@
 <script type="module" src="./exercise-browser.js"></script>
 <!-- ملف بوابة التسجيل (يجب أن يكون الأخير) -->
 <script type="module" src="./auth-gateway.js"></script>
+
+<!-- Smart Rest Timer — Event-Driven Overlay -->
+<div id="smart-rest-overlay" class="smart-rest-overlay">
+  <div class="sr-backdrop"></div>
+  <div class="sr-panel">
+    <span class="sr-label">Rest Timer</span>
+    <div class="sr-clock" id="srClock">01:30</div>
+    <div class="sr-actions">
+      <button class="sr-btn sr-btn-add" id="srAdd30">+30s</button>
+      <button class="sr-btn sr-btn-skip" id="srSkip">Skip Rest</button>
+    </div>
+  </div>
+</div>
   </body>
 </html>

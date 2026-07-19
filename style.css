@@ -3919,6 +3919,115 @@ a {
 }
 
 /* ============================================
+   SMART REST TIMER — EVENT-DRIVEN OVERLAY
+   ============================================ */
+
+.smart-rest-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.smart-rest-overlay.open {
+  display: flex;
+}
+
+.sr-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.sr-panel {
+  position: relative;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 24px;
+  padding: 32px 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  animation: srSlideUp 0.3s var(--ease-spring) both;
+}
+
+@keyframes srSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.sr-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.sr-clock {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -2px;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+.sr-clock.done {
+  color: var(--accent-lime);
+}
+
+.sr-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.sr-btn {
+  height: 42px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 21px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.sr-btn:active {
+  transform: scale(0.95);
+}
+
+.sr-btn-add {
+  background: #2a2a2a;
+  color: var(--text-secondary);
+}
+
+.sr-btn-add:hover {
+  background: #333;
+  color: var(--text-primary);
+}
+
+.sr-btn-skip {
+  background: transparent;
+  color: var(--text-tertiary);
+  border: 1px solid #2a2a2a;
+}
+
+.sr-btn-skip:hover {
+  border-color: var(--text-tertiary);
+  color: var(--text-secondary);
+}
+
+/* ============================================
    EXERCISE LIGHTBOX — GLOBAL IMAGE ZOOM
    ============================================ */
 

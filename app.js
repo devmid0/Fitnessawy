@@ -152,6 +152,83 @@ function init() {
   } catch (e) { console.warn('[Fitnessawy] Lightbox init failed:', e); }
 }
 
+/* ── Smart Rest Timer — Event-Driven Overlay ── */
+
+var restInterval = null;
+var restSeconds = 0;
+var restOverlay = null;
+var restClock = null;
+
+var REST_DEFAULT = 90;
+
+function initRestTimer() {
+  restOverlay = document.getElementById('smart-rest-overlay');
+  restClock = document.getElementById('srClock');
+  if (!restOverlay || !restClock) return;
+
+  var addBtn = document.getElementById('srAdd30');
+  if (addBtn) {
+    addBtn.addEventListener('click', function () {
+      restSeconds += 30;
+      renderRestClock();
+    });
+  }
+
+  var skipBtn = document.getElementById('srSkip');
+  if (skipBtn) {
+    skipBtn.addEventListener('click', function () {
+      dismissRestTimer();
+    });
+  }
+}
+
+function startRestTimer() {
+  if (!restOverlay || !restClock) return;
+  restSeconds = REST_DEFAULT;
+  renderRestClock();
+  restOverlay.classList.add('open');
+  restClock.classList.remove('done');
+  clearInterval(restInterval);
+  restInterval = setInterval(function () {
+    if (restSeconds <= 0) {
+      completeRestTimer();
+      return;
+    }
+    restSeconds--;
+    renderRestClock();
+    if (restSeconds <= 0) {
+      completeRestTimer();
+    }
+  }, 1000);
+}
+
+function completeRestTimer() {
+  clearInterval(restInterval);
+  restInterval = null;
+  restSeconds = 0;
+  renderRestClock();
+  if (restClock) restClock.classList.add('done');
+  setTimeout(function () {
+    dismissRestTimer();
+  }, 2000);
+}
+
+function dismissRestTimer() {
+  clearInterval(restInterval);
+  restInterval = null;
+  restSeconds = 0;
+  if (restOverlay) restOverlay.classList.remove('open');
+}
+
+function renderRestClock() {
+  if (!restClock) return;
+  var m = Math.floor(restSeconds / 60);
+  var s = restSeconds % 60;
+  restClock.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+initRestTimer();
+
 /* ── Expose globally for cross-module refs ── */
 
 window.ForgeApp = { switchView: switchView, updateDashboardStats: updateDashboardStats };
@@ -409,6 +486,10 @@ function toggleSetDone(ei, si) {
 
   updateCardComplete(ei);
   updateLoggerVolume();
+
+  if (set.done) {
+    startRestTimer();
+  }
 }
 
 function addLoggerSet(ei) {
