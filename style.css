@@ -4060,3 +4060,250 @@ a {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
+
+/* ============================================
+    ROUTINE WIZARD — AUTO-BUILD CTA & OVERLAY
+    ============================================ */
+
+.wizard-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  width: 100%;
+  height: 56px;
+  margin-bottom: var(--space-md);
+  background: linear-gradient(135deg, var(--accent-cyan) 0%, #00E6B0 100%);
+  color: var(--bg-base);
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+  box-shadow: 0 4px 20px var(--accent-cyan-glow), 0 0 0 1px rgba(0, 255, 204, 0.15) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.wizard-cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.wizard-cta-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.wizard-cta-btn:hover {
+  box-shadow: 0 6px 28px var(--accent-cyan-glow), 0 0 40px rgba(0, 255, 204, 0.15);
+  transform: translateY(-1px);
+}
+
+.wizard-cta-btn:active {
+  transform: scale(0.98) translateY(0);
+}
+
+.wizard-cta-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* ── Overlay ──────────────────────────────── */
+
+.wizard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: var(--space-lg);
+}
+
+.wizard-overlay.open {
+  display: flex;
+}
+
+/* ── Modal Box ────────────────────────────── */
+
+.wizard-modal {
+  width: 100%;
+  max-width: 380px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  animation: wizardModalIn 0.3s var(--ease-spring) both;
+}
+
+@keyframes wizardModalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.wizard-modal-header {
+  padding: var(--space-lg) var(--space-lg) 0;
+}
+
+.wizard-modal-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.wizard-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--accent-cyan-dim);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.wizard-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.wizard-modal-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  margin: 2px 0 0;
+  font-weight: 500;
+}
+
+/* ── Form ─────────────────────────────────── */
+
+.wizard-form {
+  padding: var(--space-lg);
+}
+
+.wizard-field {
+  margin-bottom: var(--space-md);
+}
+
+.wizard-field:last-of-type {
+  margin-bottom: 0;
+}
+
+.wizard-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.wizard-select-wrap {
+  position: relative;
+}
+
+.wizard-select {
+  width: 100%;
+  height: 48px;
+  padding: 0 40px 0 var(--space-md);
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+  box-sizing: border-box;
+}
+
+.wizard-select:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px var(--accent-cyan-dim);
+}
+
+.wizard-select option {
+  background: #2a2a2a;
+  color: #ffffff;
+  padding: 8px;
+}
+
+.wizard-select-arrow {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.wizard-select-wrap:focus-within .wizard-select-arrow {
+  color: var(--accent-cyan);
+}
+
+/* ── Actions ──────────────────────────────── */
+
+.wizard-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.wizard-btn {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.wizard-btn:active {
+  transform: scale(0.97);
+}
+
+.wizard-btn-cancel {
+  background: #2a2a2a;
+  color: var(--text-secondary);
+  border: 1px solid #333;
+}
+
+.wizard-btn-cancel:hover {
+  background: #333;
+  color: var(--text-primary);
+  border-color: #444;
+}
+
+.wizard-btn-generate {
+  background: var(--accent-cyan);
+  color: var(--bg-base);
+  box-shadow: 0 0 16px var(--accent-cyan-glow);
+}
+
+.wizard-btn-generate:hover {
+  background: #33FFD4;
+  box-shadow: 0 0 24px var(--accent-cyan-glow);
+}

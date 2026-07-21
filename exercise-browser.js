@@ -343,6 +343,7 @@ function confirmSaveRoutine() {
   }
 
   var routine = {
+    id: Date.now() + '_custom',
     name: name,
     exercises: selectedExercises.map(function (ex) {
       return { name: ex.name, targetSets: ex.targetSets, targetReps: ex.targetReps };
@@ -357,18 +358,16 @@ function confirmSaveRoutine() {
   renderMyRoutines();
 }
 
-function deleteRoutine(index, e) {
-  e.stopPropagation();
+function deleteRoutine(id) {
   var routines = readRoutines();
-  if (index < 0 || index >= routines.length) return;
-  routines.splice(index, 1);
+  routines = routines.filter(function (r) { return r.id !== id; });
   writeRoutines(routines);
   renderMyRoutines();
 }
 
-function loadRoutine(index) {
+function loadRoutine(id) {
   var routines = readRoutines();
-  var routine = routines[index];
+  var routine = routines.find(function (r) { return r.id === id; });
   if (!routine || !routine.exercises.length) return;
 
   selectedExercises = [];
@@ -385,6 +384,17 @@ function loadRoutine(index) {
         target: match.target || '',
         equipment: match.equipment || '',
         body_part: match.body_part || match.category || '',
+        targetSets: t.targetSets,
+        targetReps: t.targetReps
+      });
+    } else {
+      selectedExercises.push({
+        id: t.id || ('sel_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
+        name: t.name,
+        gif_url: t.gifUrl || '',
+        target: t.target || '',
+        equipment: '',
+        body_part: t.bodyPart || '',
         targetSets: t.targetSets,
         targetReps: t.targetReps
       });
@@ -423,32 +433,32 @@ function renderMyRoutines() {
   myRoutines.style.display = '';
   var html = '<h3 class="mr-title">My Routines</h3><div class="mr-scroll">';
 
-  routines.forEach(function (r, i) {
-    html += '<div class="mr-card" data-routine="' + i + '">';
-    html += '<button class="mr-card-delete" data-delete="' + i + '" title="Delete routine">';
+  routines.forEach(function (r) {
+    html += '<div class="mr-card" data-routine="' + r.id + '">';
+    html += '<button class="mr-card-delete" data-delete="' + r.id + '" title="Delete routine">';
     html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
     html += '</button>';
     html += '<div class="mr-card-icon">';
     html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
     html += '</div>';
     html += '<span class="mr-card-name">' + esc(r.name) + '</span>';
-    html += '<span class="mr-card-count">' + r.exercises.length + ' exercises</span>';
+    html += `<span class="mr-card-count">${r.exercises ? r.exercises.length : 0} EXERCISES</span>`;
     html += '</div>';
   });
 
   html += '</div>';
   myRoutines.innerHTML = html;
-
-  myRoutines.querySelector('.mr-scroll').addEventListener('click', function (e) {
-    var delBtn = e.target.closest('.mr-card-delete');
-    if (delBtn) {
-      deleteRoutine(+delBtn.dataset.delete, e);
-      return;
-    }
-    var card = e.target.closest('.mr-card');
-    if (card) loadRoutine(+card.dataset.routine);
-  });
 }
+
+document.body.addEventListener('click', function (e) {
+  var delBtn = e.target.closest('.mr-card-delete');
+  if (delBtn) {
+    deleteRoutine(delBtn.dataset.delete);
+    return;
+  }
+  var card = e.target.closest('.mr-card');
+  if (card) loadRoutine(card.dataset.routine);
+});
 
 /* ── Add / Remove Exercise ─────────────── */
 
@@ -539,12 +549,257 @@ function resetWorkoutSelectionUI() {
   }
 }
 
+/* ── Routine Wizard — AI-Less Decision Engine ── */
+
+var WIZARD_TEMPLATES = {
+  '6 Days': {
+    name: 'Push / Pull / Legs',
+    days: [
+      { label: 'Push', exercises: [
+        { name: 'Barbell Bench Press', targetSets: 4, targetReps: 10 },
+        { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+        { name: 'Incline Dumbbell Fly', targetSets: 3, targetReps: 12 },
+        { name: 'Tricep Rope Pushdown', targetSets: 3, targetReps: 12 }
+      ]},
+      { label: 'Pull', exercises: [
+        { name: 'Barbell Bent Over Row', targetSets: 4, targetReps: 10 },
+        { name: 'Lat Pulldown', targetSets: 3, targetReps: 12 },
+        { name: 'Barbell Curl', targetSets: 3, targetReps: 12 },
+        { name: 'Lateral Raise', targetSets: 3, targetReps: 15 }
+      ]},
+      { label: 'Legs', exercises: [
+        { name: 'Barbell Squat', targetSets: 4, targetReps: 8 },
+        { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
+        { name: 'Leg Extension', targetSets: 3, targetReps: 12 },
+        { name: 'Chest Dip', targetSets: 3, targetReps: 10 }
+      ]}
+    ]
+  },
+  '4 Days': {
+    name: 'Upper / Lower',
+    days: [
+      { label: 'Upper Body', exercises: [
+        { name: 'Barbell Bench Press', targetSets: 4, targetReps: 10 },
+        { name: 'Barbell Bent Over Row', targetSets: 4, targetReps: 10 },
+        { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+        { name: 'Barbell Curl', targetSets: 3, targetReps: 12 }
+      ]},
+      { label: 'Lower Body', exercises: [
+        { name: 'Barbell Squat', targetSets: 4, targetReps: 8 },
+        { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
+        { name: 'Leg Extension', targetSets: 3, targetReps: 12 },
+        { name: 'Lateral Raise', targetSets: 3, targetReps: 15 }
+      ]}
+    ]
+  },
+  '3 Days': {
+    name: 'Full Body',
+    days: [
+      { label: 'Full Body Day 1', exercises: [
+        { name: 'Barbell Bench Press', targetSets: 3, targetReps: 10 },
+        { name: 'Barbell Squat', targetSets: 3, targetReps: 10 },
+        { name: 'Barbell Bent Over Row', targetSets: 3, targetReps: 10 },
+        { name: 'Barbell Curl', targetSets: 3, targetReps: 12 }
+      ]},
+      { label: 'Full Body Day 2', exercises: [
+        { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+        { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
+        { name: 'Lat Pulldown', targetSets: 3, targetReps: 12 },
+        { name: 'Leg Extension', targetSets: 3, targetReps: 12 }
+      ]},
+      { label: 'Full Body Day 3', exercises: [
+        { name: 'Barbell Squat', targetSets: 3, targetReps: 10 },
+        { name: 'Barbell Curl', targetSets: 3, targetReps: 12 },
+        { name: 'Leg Extension', targetSets: 3, targetReps: 12 },
+        { name: 'Lateral Raise', targetSets: 3, targetReps: 15 }
+      ]}
+    ]
+  }
+};
+
+/* ── Local Routine Generation ─────────── */
+
+function pickRandom(arr, count) {
+  var shuffled = arr.slice().sort(function () { return 0.5 - Math.random(); });
+  return shuffled.slice(0, count);
+}
+
+function generateWizardRoutine(frequency, goal, experience) {
+  var template = WIZARD_TEMPLATES[frequency];
+  if (!template) return null;
+
+  var suffix = '';
+  if (goal === 'Lose Fat') suffix += ' — Fat Loss';
+  else if (goal === 'Strength') suffix += ' — Strength';
+  if (experience === 'Beginner') suffix += ' (Beginner)';
+  else if (experience === 'Advanced') suffix += ' (Advanced)';
+
+  var exerciseMeta = {
+    'Barbell Bench Press':     { bodyPart: 'chest',      target: 'pectorals',      gifUrl: './assets/data/exercises.json' },
+    'Overhead Press':          { bodyPart: 'shoulders',  target: 'delts',           gifUrl: './assets/data/exercises.json' },
+    'Incline Dumbbell Fly':    { bodyPart: 'chest',      target: 'pectorals',       gifUrl: './assets/data/exercises.json' },
+    'Tricep Rope Pushdown':    { bodyPart: 'upper arms', target: 'triceps',         gifUrl: './assets/data/exercises.json' },
+    'Barbell Bent Over Row':   { bodyPart: 'back',       target: 'upper back',      gifUrl: './assets/data/exercises.json' },
+    'Lat Pulldown':            { bodyPart: 'back',       target: 'lats',            gifUrl: './assets/data/exercises.json' },
+    'Barbell Curl':            { bodyPart: 'upper arms', target: 'biceps',          gifUrl: './assets/data/exercises.json' },
+    'Lateral Raise':           { bodyPart: 'shoulders',  target: 'delts',           gifUrl: './assets/data/exercises.json' },
+    'Barbell Squat':           { bodyPart: 'upper legs', target: 'quadriceps',      gifUrl: './assets/data/exercises.json' },
+    'Romanian Deadlift':       { bodyPart: 'upper legs', target: 'hamstrings',      gifUrl: './assets/data/exercises.json' },
+    'Leg Extension':           { bodyPart: 'upper legs', target: 'quadriceps',      gifUrl: './assets/data/exercises.json' },
+    'Chest Dip':               { bodyPart: 'chest',      target: 'pectorals',       gifUrl: './assets/data/exercises.json' }
+  };
+
+  if (frequency === '4 Days') {
+    var pushPool = allExercises.filter(function (ex) {
+      var bp = (ex.body_part || '').toLowerCase();
+      var tgt = (ex.target || '').toLowerCase();
+      return bp === 'chest' || bp === 'shoulders' || (bp === 'upper arms' && tgt === 'triceps');
+    });
+    var pullPool = allExercises.filter(function (ex) {
+      var bp = (ex.body_part || '').toLowerCase();
+      var tgt = (ex.target || '').toLowerCase();
+      return bp === 'back' || (bp === 'upper arms' && tgt === 'biceps');
+    });
+    var legPool = allExercises.filter(function (ex) {
+      var bp = (ex.body_part || '').toLowerCase();
+      return bp === 'upper legs' || bp === 'lower legs' || bp === 'cardio';
+    });
+
+    var pushPicks = pickRandom(pushPool, 4);
+    var pullPicks = pickRandom(pullPool, 4);
+    var legPicks = pickRandom(legPool, 4);
+
+    return [
+      {
+        id: 'rt_push_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        name: 'Push Day' + suffix,
+        exercises: pushPicks.map(function (ex, i) {
+          return {
+            id: 'ex_push_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 8),
+            name: ex.name,
+            bodyPart: ex.body_part || ex.category || '',
+            target: ex.target || '',
+            gifUrl: ex.gif_url || '',
+            equipment: ex.equipment || '',
+            targetSets: 4,
+            targetReps: 10
+          };
+        })
+      },
+      {
+        id: 'rt_pull_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        name: 'Pull Day' + suffix,
+        exercises: pullPicks.map(function (ex, i) {
+          return {
+            id: 'ex_pull_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 8),
+            name: ex.name,
+            bodyPart: ex.body_part || ex.category || '',
+            target: ex.target || '',
+            gifUrl: ex.gif_url || '',
+            equipment: ex.equipment || '',
+            targetSets: 4,
+            targetReps: 10
+          };
+        })
+      },
+      {
+        id: 'rt_leg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        name: 'Leg Day' + suffix,
+        exercises: legPicks.map(function (ex, i) {
+          return {
+            id: 'ex_leg_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 8),
+            name: ex.name,
+            bodyPart: ex.body_part || ex.category || '',
+            target: ex.target || '',
+            gifUrl: ex.gif_url || '',
+            equipment: ex.equipment || '',
+            targetSets: 4,
+            targetReps: 10
+          };
+        })
+      }
+    ];
+  }
+
+  var routines = [];
+  template.days.forEach(function (day, index) {
+    var freshExercises = [];
+    var exList = day.exercises.slice(0, 4);
+    for (var i = 0; i < exList.length; i++) {
+      var src = exList[i];
+      var meta = exerciseMeta[src.name] || { bodyPart: 'other', target: 'other', gifUrl: '' };
+      freshExercises.push({
+        id: 'ex_' + Date.now() + '_' + index + '_' + i + '_' + Math.random().toString(36).slice(2, 8),
+        name: src.name,
+        bodyPart: meta.bodyPart,
+        target: meta.target,
+        gifUrl: meta.gifUrl,
+        targetSets: src.targetSets,
+        targetReps: src.targetReps
+      });
+    }
+    routines.push({
+      id: 'rt_' + Date.now() + '_' + index + '_' + Math.random().toString(36).slice(2, 8),
+      name: day.label + suffix,
+      exercises: freshExercises
+    });
+  });
+
+  return routines;
+}
+
+function initWizard() {
+  var overlay = document.getElementById('routine-wizard-overlay');
+  var form = document.getElementById('routine-wizard-form');
+  var cancelBtn = document.getElementById('wizardCancelBtn');
+  var startBtn = document.getElementById('btn-start-wizard');
+
+  if (!overlay || !form || !cancelBtn || !startBtn) return;
+
+  startBtn.addEventListener('click', function () {
+    overlay.classList.add('open');
+  });
+
+  cancelBtn.addEventListener('click', function () {
+    overlay.classList.remove('open');
+  });
+
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var experience = document.getElementById('wizExperience').value;
+    var frequency = document.getElementById('wizFrequency').value;
+    var goal = document.getElementById('wizGoal').value;
+
+    var generatedRoutines = generateWizardRoutine(frequency, goal, experience);
+    if (!generatedRoutines || !generatedRoutines.length) return;
+
+    var routines = readRoutines();
+    generatedRoutines.forEach(function (r) { routines.unshift(r); });
+    writeRoutines(routines);
+
+    console.log('[Wizard] Generated routines:', generatedRoutines);
+    renderMyRoutines();
+    overlay.classList.remove('open');
+
+    if (window.ForgeDialog) {
+      var names = generatedRoutines.map(function (r) { return r.name; }).join('", "');
+      window.ForgeDialog.alert('Routine Generated', 'Your custom workouts ("' + names + '") have been generated!');
+    }
+  });
+}
+
 /* ── Public API ────────────────────────── */
 
 function init() {
   cacheDom();
   bindEvents();
   renderMyRoutines();
+  initWizard();
   if (!allExercises.length) fetchExercises();
 }
 
@@ -554,7 +809,8 @@ window.ForgeBrowser = {
   resetSelection: resetWorkoutSelectionUI,
   getSelectedCount: function () { return selectedExercises.length; },
   getSelectedExercises: function () { return selectedExercises.slice(); },
-  startSelectedWorkout: onStartWorkout
+  startSelectedWorkout: onStartWorkout,
+  renderRoutines: renderMyRoutines
 };
 
 export { init, resetWorkoutSelectionUI };

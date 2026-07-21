@@ -149,6 +149,12 @@
             <button class="btn-primary" id="btnRetryLoad">Retry</button>
           </div>
 
+          <!-- Auto-Build Routine CTA -->
+          <button id="btn-start-wizard" class="wizard-cta-btn">
+            <span class="wizard-cta-icon">&#9889;</span>
+            Auto-Build Routine
+          </button>
+
           <!-- My Routines (dynamic) -->
           <div id="myRoutines" class="my-routines"></div>
 
@@ -931,5 +937,59 @@
     </div>
   </div>
 </div>
+  <!-- Routine Wizard Overlay -->
+  <div id="routine-wizard-overlay" class="wizard-overlay">
+    <div class="wizard-modal">
+      <div class="wizard-modal-header">
+        <div class="wizard-modal-brand">
+          <span class="wizard-modal-icon">&#9889;</span>
+          <div>
+            <h3 class="wizard-modal-title">Auto-Build Routine</h3>
+            <p class="wizard-modal-subtitle">Hardcoded logic. Zero latency.</p>
+          </div>
+        </div>
+      </div>
+      <form id="routine-wizard-form" class="wizard-form">
+        <div class="wizard-field">
+          <label class="wizard-label" for="wizExperience">Experience</label>
+          <div class="wizard-select-wrap">
+            <select id="wizExperience" class="wizard-select" required>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate" selected>Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+            <svg class="wizard-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="wizard-field">
+          <label class="wizard-label" for="wizFrequency">Frequency</label>
+          <div class="wizard-select-wrap">
+            <select id="wizFrequency" class="wizard-select" required>
+              <option value="3 Days">3 Days</option>
+              <option value="4 Days" selected>4 Days</option>
+              <option value="6 Days">6 Days</option>
+            </select>
+            <svg class="wizard-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="wizard-field">
+          <label class="wizard-label" for="wizGoal">Goal</label>
+          <div class="wizard-select-wrap">
+            <select id="wizGoal" class="wizard-select" required>
+              <option value="Build Muscle" selected>Build Muscle</option>
+              <option value="Lose Fat">Lose Fat</option>
+              <option value="Strength">Strength</option>
+            </select>
+            <svg class="wizard-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div class="wizard-actions">
+          <button type="button" class="wizard-btn wizard-btn-cancel" id="wizardCancelBtn">Cancel</button>
+          <button type="submit" class="wizard-btn wizard-btn-generate">Generate Routine</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   </body>
 </html>
